@@ -8,7 +8,7 @@
 
 | 合约 | 地址 | 说明 |
 |------|------|------|
-| BoosterVault | [0x4C3BB804481e3d8FdC1A361558d31E6337a00083](https://testnet.bscscan.com/address/0x4C3BB804481e3d8FdC1A361558d31E6337a00083) | 主仓库合约，处理质押/赎回逻辑 |
+| BoosterVault | [0x2171312cc771ba0aaAB235184d49c92f889a3E04](https://testnet.bscscan.com/address/0x2171312cc771ba0aaAB235184d49c92f889a3E04) | 主仓库合约，处理质押/赎回逻辑 |
 | BoosterVaultEscrow | [0xc2c19A6a728274AB2d4D8574B8bee35597d426c6](https://testnet.bscscan.com/address/0xc2c19A6a728274AB2d4D8574B8bee35597d426c6) | 奖励托管合约，记录并发放奖励 |
 | BoosterWithdrawVault | [0x6d448463B233d2d1d968D2Ba3E27C1ca1F476e7F](https://testnet.bscscan.com/address/0x6d448463B233d2d1d968D2Ba3E27C1ca1F476e7F) | 提现缓冲仓，负责实际打款 |
 | mBnUSDu | [0x4ADD9a64d4a553533ef68edcc392d96Ac733fE92](https://testnet.bscscan.com/address/0x4ADD9a64d4a553533ef68edcc392d96Ac733fE92) | bnStaked Token |

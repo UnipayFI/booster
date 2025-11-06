@@ -5,7 +5,7 @@ optimizer = true
 optimizer_runs = 20000
 solc_version = "0.8.27"
 libs = ["lib"]
-test = 'test/foundry'
+test = 'test'
 cache_path = 'forge-cache'
 fs_permissions = [{ access = "read", path = "./out"}]
 evm_version = "cancun"
@@ -26,6 +26,23 @@ via_ir = true
 
 [fmt]
 tab_width = 2
+
+[lint]
+exclude_lints = [
+    "unsafe-typecast",
+    "unused-import",
+    "erc20-unchecked-transfer",
+    "mixed-case-variable",
+    "unwrapped-modifier-logic",
+    "mixed-case-function",
+    "unaliased-plain-import",
+    "asm-keccak256",
+    "screaming-snake-case-const",
+    "incorrect-shift",
+    "screaming-snake-case-immutable",
+    "unchecked-call",
+    "pascal-case-struct",
+]
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"

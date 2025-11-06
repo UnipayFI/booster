@@ -35,12 +35,11 @@ contract VaultEscrow is IVaultEscrow, AccessControl, ReentrancyGuard {
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
   }
 
-  function recordReward(address user, address token, uint256 amount)
-    external
-    override
-    onlyRole(VAULT_ROLE)
-    nonReentrant
-  {
+  function recordReward(
+    address user,
+    address token,
+    uint256 amount
+  ) external override onlyRole(VAULT_ROLE) nonReentrant {
     require(user != address(0), "user zero");
     require(token != address(0), "token zero");
     require(amount > 0, "amount zero");

@@ -4,6 +4,10 @@
   "private": true,
   "main": "exports/exports.js",
   "types": "exports/exports.d.ts",
+  "scripts": {
+    "size-contracts": "forge build --sizes",
+    "prettier": "prettier --write \"contracts/**/*.sol\" \"test/**/*.sol\" \"script/**/*.sol\" \"deploy/**/*.ts\""
+  },
   "dependencies": {},
   "devDependencies": {
     "cross-env": "7.0.0",

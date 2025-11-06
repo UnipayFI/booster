@@ -35,6 +35,15 @@ export const boostConfig: Record<string, BoostMiscConfig> = {
           "115792089237316195423570985008687907853269984665640564039457.584007913129639935",
         ),
       },
+      {
+        underlying: getAddress("0x7166A5e1Af969342068DeF6A7BD26DbA036AED75"),
+        stakedAddress: getAddress("0x4ADD9a64d4a553533ef68edcc392d96Ac733fE92"),
+        rewardRate: 776n,
+        minStake: parseEther("10"),
+        maxStake: parseEther(
+          "115792089237316195423570985008687907853269984665640564039457.584007913129639935",
+        ),
+      },
     ],
   },
   bsc_mainnet: {

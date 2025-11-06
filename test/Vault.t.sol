@@ -3,12 +3,12 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import {Vault} from "../contracts/booster/Vault.sol";
-import {StakedToken} from "../contracts/booster/StakedToken.sol";
-import {WithdrawVault} from "../contracts/booster/WithdrawVault.sol";
-import {VaultEscrow} from "../contracts/booster/VaultEscrow.sol";
-import {ClaimItem} from "../contracts/booster/IVault.sol";
-import {MockToken} from "../contracts/mock/MockToken.sol";
+import { Vault } from "../contracts/Vault.sol";
+import { StakedToken } from "../contracts/StakedToken.sol";
+import { WithdrawVault } from "../contracts/WithdrawVault.sol";
+import { VaultEscrow } from "../contracts/VaultEscrow.sol";
+import { ClaimItem } from "../contracts/IVault.sol";
+import { MockToken } from "../contracts/mock/MockToken.sol";
 
 contract VaultBoosterTest is Test {
   uint256 private constant _BASE = 10_000;
@@ -178,7 +178,11 @@ contract VaultBoosterTest is Test {
 
     vm.startPrank(_distributor);
     uint256 dispersed = _vaultEscrow.disperseToken(
-      _alice, address(_underlying), claimItem.rewardAmount, address(_underlying), claimItem.rewardAmount
+      _alice,
+      address(_underlying),
+      claimItem.rewardAmount,
+      address(_underlying),
+      claimItem.rewardAmount
     );
     vm.stopPrank();
 
