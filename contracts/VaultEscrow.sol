@@ -15,17 +15,16 @@ contract VaultEscrow is IVaultEscrow, AccessControl, ReentrancyGuard {
   bytes32 public constant DISTRIBUTOR_ROLE = keccak256("DISTRIBUTOR_ROLE");
 
   // user => token => amount
-  mapping(address => mapping(address => uint256)) private _pendingRewards;
+  mapping(address => mapping(address => uint256)) private _pendingWithdraws;
 
-  event RewardRecorded(address indexed user, address indexed token, uint256 amount);
-  event RewardDispersed(
+  event WithdrawRecorded(address indexed user, address indexed token, uint256 amount);
+  event WithdrawDispersed(
     address indexed user,
     address indexed recordToken,
     uint256 recordAmount,
-    address indexed rewardToken,
-    uint256 rewardAmount,
-    address recipient,
-    address caller
+    address withdrawToken,
+    uint256 withdrawAmount,
+    address from
   );
   event VaultRoleGranted(address indexed vault);
   event VaultRoleRevoked(address indexed vault);
@@ -35,45 +34,47 @@ contract VaultEscrow is IVaultEscrow, AccessControl, ReentrancyGuard {
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
   }
 
-  function recordReward(
-    address user,
-    address token,
-    uint256 amount
-  ) external override onlyRole(VAULT_ROLE) nonReentrant {
+  function recordWithdraw(address user, address token, uint256 amount)
+    external
+    override
+    onlyRole(VAULT_ROLE)
+    nonReentrant
+  {
     require(user != address(0), "user zero");
     require(token != address(0), "token zero");
     require(amount > 0, "amount zero");
 
-    _pendingRewards[user][token] += amount;
+    _pendingWithdraws[user][token] += amount;
 
-    emit RewardRecorded(user, token, amount);
+    emit WithdrawRecorded(user, token, amount);
   }
 
   function disperseToken(
     address user,
     address recordToken,
     uint256 freezeRecordAmount,
-    address rewardToken,
-    uint256 rewardAmount
+    address from,
+    address withdrawToken,
+    uint256 withdrawAmount
   ) external override nonReentrant returns (uint256) {
     require(user != address(0), "user zero");
-    require(recordToken != address(0) && rewardToken != address(0), "token zero");
-    require(freezeRecordAmount > 0 && rewardAmount > 0, "amount zero");
+    require(recordToken != address(0) && withdrawToken != address(0), "token zero");
+    require(freezeRecordAmount > 0 && withdrawAmount > 0, "amount zero");
     require(hasRole(DISTRIBUTOR_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "unauthorized");
 
-    uint256 pending = _pendingRewards[user][recordToken];
-    require(pending >= freezeRecordAmount, "insufficient reward");
+    uint256 pendingWithdrawAmount = _pendingWithdraws[user][recordToken];
+    require(pendingWithdrawAmount >= freezeRecordAmount, "insufficient withdraw");
 
-    _pendingRewards[user][recordToken] = pending - freezeRecordAmount;
+    _pendingWithdraws[user][recordToken] = pendingWithdrawAmount - freezeRecordAmount;
 
-    IERC20(rewardToken).safeTransfer(user, rewardAmount);
+    IERC20(withdrawToken).safeTransferFrom(from, user, withdrawAmount);
 
-    emit RewardDispersed(user, recordToken, freezeRecordAmount, rewardToken, rewardAmount, user, msg.sender);
-    return rewardAmount;
+    emit WithdrawDispersed(user, recordToken, freezeRecordAmount, withdrawToken, withdrawAmount, from);
+    return withdrawAmount;
   }
 
-  function pendingReward(address user, address token) external view override returns (uint256) {
-    return _pendingRewards[user][token];
+  function pendingWithdraw(address user, address token) external view override returns (uint256) {
+    return _pendingWithdraws[user][token];
   }
 
   function setVault(address vault, bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {

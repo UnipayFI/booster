@@ -2,15 +2,16 @@
 pragma solidity ^0.8.0;
 
 interface IVaultEscrow {
-  function recordReward(address user, address token, uint256 amount) external;
+  function recordWithdraw(address user, address token, uint256 amount) external;
 
   function disperseToken(
     address user,
     address recordToken,
     uint256 freezeRecordAmount,
-    address rewardToken,
-    uint256 rewardAmount
+    address from,
+    address withdrawToken,
+    uint256 withdrawAmount
   ) external returns (uint256);
 
-  function pendingReward(address user, address token) external view returns (uint256);
+  function pendingWithdraw(address user, address token) external view returns (uint256);
 }

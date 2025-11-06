@@ -20,6 +20,7 @@ struct StakeItem {
 
 struct ClaimItem {
   bool isDone;
+  bool isSusduWithdraw;
   address token;
   address user;
   uint256 totalAmount;
@@ -35,16 +36,14 @@ interface IVault {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   event Stake(address indexed _user, address indexed _token, uint256 indexed _amount);
-  event RequestClaim(address _user, address indexed _token, uint256 indexed _amount, uint256 indexed _id);
+  event RequestClaim(
+    address _user, address indexed _token, uint256 indexed _amount, uint256 indexed _id, bool _isSusduWithdraw
+  );
   event ClaimAssets(address indexed _user, address indexed _token, uint256 indexed _amount, uint256 _id);
   event UpdateRewardRate(address _token, uint256 _oldRewardRate, uint256 _newRewardRate);
   event UpdateCeffu(address _oldCeffu, address _newCeffu);
   event UpdateStakeLimit(
-    address indexed _token,
-    uint256 _oldMinAmount,
-    uint256 _oldMaxAmount,
-    uint256 _newMinAmount,
-    uint256 _newMaxAmount
+    address indexed _token, uint256 _oldMinAmount, uint256 _oldMaxAmount, uint256 _newMinAmount, uint256 _newMaxAmount
   );
   event CeffuReceive(address indexed _token, address _ceffu, uint256 indexed _amount);
   event AddSupportedToken(address indexed _token, uint256 _minAmount, uint256 _maxAmount);
@@ -52,15 +51,12 @@ interface IVault {
   event UpdateWaitingTime(uint256 _oldWaitingTime, uint256 _newWaitingTIme);
   event StakedTokenRegistered(address indexed stakedToken, address indexed underlyingToken);
   event StakedDistributed(
-    address indexed token,
-    address indexed recipient,
-    uint256 amount,
-    bool historicalRewardsEnabled
+    address indexed token, address indexed recipient, uint256 amount, bool historicalRewardsEnabled
   );
   event FlashWithdraw(address indexed _user, address indexed _token, uint256 indexed _amount, uint256 _fee);
   event UpdatePenaltyRate(uint256 indexed oldRate, uint256 indexed newRate);
   event CancelClaim(address indexed user, address indexed _token, uint256 indexed _amount, uint256 _id);
-  event UpdateRewardEscrow(address indexed oldEscrow, address indexed newEscrow);
+  event UpdateEscrowVault(address indexed oldEscrow, address indexed newEscrow);
   event FlashStatusChanged(bool indexed oldStatus, bool indexed newStatus);
   event CancelStatusChanged(bool indexed oldStatus, bool indexed newStatus);
 
@@ -70,7 +66,7 @@ interface IVault {
 
   function stake_66380860(address _token, uint256 _stakedAmount) external;
 
-  function requestClaim_8135334(address _token, uint256 _amount) external returns (uint256);
+  function requestClaim_8135334(address _token, uint256 _amount, bool _isSusduWithdraw) external returns (uint256);
 
   function cancelClaim(uint256 _queueId, address _token) external;
 
@@ -96,7 +92,7 @@ interface IVault {
 
   function setDistributorAddr(address newDistributorAddr) external;
 
-  function setRewardEscrow(address newEscrow) external;
+  function setEscrowVault(address newEscrow) external;
 
   function setStakeLimit(address _token, uint256 _minAmount, uint256 _maxAmount) external;
 
@@ -116,11 +112,10 @@ interface IVault {
 
   function convertToAssets(uint256 staked, address _token) external view returns (uint256);
 
-  function getClaimableRewardsWithTargetTime(
-    address _user,
-    address _token,
-    uint256 _targetTime
-  ) external view returns (uint256);
+  function getClaimableRewardsWithTargetTime(address _user, address _token, uint256 _targetTime)
+    external
+    view
+    returns (uint256);
 
   function getClaimableAssets(address _user, address _token) external view returns (uint256);
 
@@ -152,5 +147,5 @@ interface IVault {
 
   function lastClaimQueueID() external view returns (uint256);
 
-  function getRewardEscrow() external view returns (address);
+  function getEscrowVault() external view returns (address);
 }

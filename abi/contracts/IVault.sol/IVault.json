@@ -225,6 +225,12 @@
         "internalType": "uint256",
         "name": "_id",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bool",
+        "name": "_isSusduWithdraw",
+        "type": "bool"
       }
     ],
     "name": "RequestClaim",
@@ -329,6 +335,25 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "oldEscrow",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newEscrow",
+        "type": "address"
+      }
+    ],
+    "name": "UpdateEscrowVault",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "uint256",
         "name": "oldRate",
         "type": "uint256"
@@ -341,25 +366,6 @@
       }
     ],
     "name": "UpdatePenaltyRate",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "oldEscrow",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newEscrow",
-        "type": "address"
-      }
-    ],
-    "name": "UpdateRewardEscrow",
     "type": "event"
   },
   {
@@ -647,6 +653,11 @@
             "type": "bool"
           },
           {
+            "internalType": "bool",
+            "name": "isSusduWithdraw",
+            "type": "bool"
+          },
+          {
             "internalType": "address",
             "name": "token",
             "type": "address"
@@ -753,6 +764,11 @@
           {
             "internalType": "bool",
             "name": "isDone",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isSusduWithdraw",
             "type": "bool"
           },
           {
@@ -921,7 +937,7 @@
   },
   {
     "inputs": [],
-    "name": "getRewardEscrow",
+    "name": "getEscrowVault",
     "outputs": [
       {
         "internalType": "address",
@@ -1129,6 +1145,11 @@
         "internalType": "uint256",
         "name": "_amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_isSusduWithdraw",
+        "type": "bool"
       }
     ],
     "name": "requestClaim_8135334",
@@ -1171,12 +1192,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_newRate",
-        "type": "uint256"
+        "internalType": "address",
+        "name": "newEscrow",
+        "type": "address"
       }
     ],
-    "name": "setPenaltyRate",
+    "name": "setEscrowVault",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1184,12 +1205,12 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "newEscrow",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "_newRate",
+        "type": "uint256"
       }
     ],
-    "name": "setRewardEscrow",
+    "name": "setPenaltyRate",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
