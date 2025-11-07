@@ -21,14 +21,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const admin = networkConfig.admin === ZeroAddress ? deployer : networkConfig.admin;
 
-  await deploy(`BoosterVaultEscrow_${hre.network.name}`, {
-    contract: "VaultEscrow",
+  await deploy(`BoosterVaultLedger_${hre.network.name}`, {
+    contract: "VaultLedger",
     from: deployer,
     log: true,
     args: [admin],
   });
 };
 
-func.id = "booster_vault_escrow";
-func.tags = ["BoosterVaultEscrow"];
+func.id = "booster_vault_ledger";
+func.tags = ["BoosterVaultLedger"];
 export default func;

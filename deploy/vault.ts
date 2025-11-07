@@ -1,7 +1,7 @@
 import { ZeroAddress } from "ethers";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { VaultEscrow, WithdrawVault, Vault } from "../typechain-types";
+import { VaultLedger, WithdrawVault, Vault } from "../typechain-types";
 
 import { boostConfig, BoostMiscConfig, BoostTokenConfig } from "./config";
 
@@ -32,12 +32,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const distributor =
     networkConfig.distributor === ZeroAddress ? deployer : networkConfig.distributor;
 
-  const escrowDeploymentName = `BoosterVaultEscrow_${hre.network.name}`;
-  const escrowVault = (await ethers.getContract(escrowDeploymentName)) as VaultEscrow;
+  const vaultLedgerDeploymentName = `BoosterVaultLedger_${hre.network.name}`;
+  const vaultLedger = (await ethers.getContract(vaultLedgerDeploymentName)) as VaultLedger;
   const withdrawVaultDeploymentName = `BoosterWithdrawVault_${hre.network.name}`;
   const withdrawVault = (await ethers.getContract(withdrawVaultDeploymentName)) as WithdrawVault;
   const withdrawVaultAddress = await withdrawVault.getAddress();
-  const escrowVaultAddress = await escrowVault.getAddress();
+  const vaultLedgerAddress = await vaultLedger.getAddress();
   const vaultDeploymentName = `BoosterVault_${hre.network.name}`;
   const deployedResult = await deploy(vaultDeploymentName, {
     contract: "Vault",
@@ -54,17 +54,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       networkConfig.waitingTime,
       withdrawVaultAddress,
       distributor,
-      escrowVaultAddress,
+      vaultLedgerAddress,
     ],
   });
   if (deployedResult.newlyDeployed) {
     await withdrawVault.setVault(deployedResult.address);
-    await escrowVault.setVault(deployedResult.address, true);
-    await escrowVault.setDistributor(distributor, true);
+    await vaultLedger.setVault(deployedResult.address, true);
+    await vaultLedger.setDistributor(distributor, true);
+    await vaultLedger.addAllowToken("0xfaf2A0372742A305817f5a634cA8E1C75a3Cf3E1"); // bsc-testnet susdu
   }
+  console.log(`Vault deployed to ${deployedResult.address}`);
 };
 
 func.id = "booster_vault";
 func.tags = ["BoosterVault"];
-func.dependencies = ["BoosterWithdrawVault", "BoosterVaultEscrow"];
+func.dependencies = ["BoosterWithdrawVault", "BoosterVaultLedger"];
 export default func;

@@ -13,7 +13,7 @@ import "./IVault.sol";
 import "./Utils.sol";
 
 import "./IStakedToken.sol";
-import "./IVaultEscrow.sol";
+import "./IVaultLedger.sol";
 
 contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   using SafeERC20 for IERC20;
@@ -62,7 +62,7 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   uint256 private initialTime;
   IWithdrawVault private withdrawVault;
   address private distributorAddr;
-  IVaultEscrow private escrowVault;
+  IVaultLedger private vaultLedger;
 
   bool flashNotEnable = true;
   bool cancelNotEnable = true;
@@ -79,20 +79,22 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     uint256 _waitingTime,
     address payable withdrawVaultAddress,
     address _distributorAddr,
-    address _escrowAddress
+    address _vaultLedgerAddress
   ) {
     Utils.CheckIsZeroAddress(_ceffu);
     Utils.CheckIsZeroAddress(_admin);
     Utils.CheckIsZeroAddress(_bot);
     distributorAddr = _distributorAddr;
-    Utils.CheckIsZeroAddress(_escrowAddress);
-    require(_escrowAddress.code.length > 0, "escrow not contract");
+    Utils.CheckIsZeroAddress(_vaultLedgerAddress);
+    require(_vaultLedgerAddress.code.length > 0, "vault ledger not contract");
 
     uint256 len = _tokens.length;
     require(Utils.MustGreaterThanZero(len));
     require(
-      len == _newRewardRate.length && len == _minStakeAmount.length && len == _maxStakeAmount.length
-        && len == _stakedTokens.length
+      len == _newRewardRate.length &&
+        len == _minStakeAmount.length &&
+        len == _maxStakeAmount.length &&
+        len == _stakedTokens.length
     );
 
     // Grant role
@@ -125,8 +127,11 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
       emit StakedTokenRegistered(address(stakedTokenTemp), token);
 
       // reward rate
-      RewardRateState memory rewardRateItem =
-        RewardRateState({token: token, rewardRate: _newRewardRate[i], updatedTime: block.timestamp});
+      RewardRateState memory rewardRateItem = RewardRateState({
+        token: token,
+        rewardRate: _newRewardRate[i],
+        updatedTime: block.timestamp
+      });
       rewardRateState[token].push(rewardRateItem);
       emit UpdateRewardRate(token, 0, _newRewardRate[i]);
 
@@ -134,8 +139,8 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     }
 
     withdrawVault = IWithdrawVault(withdrawVaultAddress);
-    escrowVault = IVaultEscrow(_escrowAddress);
-    emit UpdateEscrowVault(address(0), _escrowAddress);
+    vaultLedger = IVaultLedger(_vaultLedgerAddress);
+    emit UpdateVaultLedger(address(0), _vaultLedgerAddress);
 
     _pause();
   }
@@ -178,12 +183,10 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // function signature: 000000ed, the less function matching, the more gas saved
-  function stake_66380860(address _token, uint256 _stakedAmount)
-    external
-    onlySupportedToken(_token)
-    whenNotPaused
-    nonReentrant
-  {
+  function stake_66380860(
+    address _token,
+    uint256 _stakedAmount
+  ) external onlySupportedToken(_token) whenNotPaused nonReentrant {
     AssetsInfo storage assetsInfo = userAssetsInfo[msg.sender][_token];
     uint256 currentStakedAmount = assetsInfo.stakedAmount;
 
@@ -200,8 +203,9 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     supportedTokenToStakedToken[_token].mint(msg.sender, mintAmount);
 
     // update status
-    assetsInfo.stakeHistory
-      .push(StakeItem({stakeTimestamp: block.timestamp, amount: _stakedAmount, token: _token, user: msg.sender}));
+    assetsInfo.stakeHistory.push(
+      StakeItem({ stakeTimestamp: block.timestamp, amount: _stakedAmount, token: _token, user: msg.sender })
+    );
     unchecked {
       assetsInfo.stakedAmount += _stakedAmount;
       tvl[_token] += _stakedAmount;
@@ -211,13 +215,11 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   }
 
   // function signature: 0000004e, the less function matching, the more gas saved
-  function requestClaim_8135334(address _token, uint256 _amount, bool _isSusduWithdraw)
-    external
-    onlySupportedToken(_token)
-    whenNotPaused
-    nonReentrant
-    returns (uint256 _returnID)
-  {
+  function requestClaim_8135334(
+    address _token,
+    uint256 _amount,
+    bool _isStakedTokenWithdraw
+  ) external onlySupportedToken(_token) whenNotPaused nonReentrant returns (uint256 _returnID) {
     _updateRewardState(msg.sender, _token);
     uint256 exchangeRate = _getExchangeRate(_token);
 
@@ -226,24 +228,24 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     uint256 currentAccumulatedRewardAmount = assetsInfo.accumulatedReward;
 
     require(
-      Utils.MustGreaterThanZero(_amount)
-        && (_amount <= Utils.Add(currentStakedAmount, currentAccumulatedRewardAmount) || _amount == type(uint256).max),
+      Utils.MustGreaterThanZero(_amount) &&
+        (_amount <= Utils.Add(currentStakedAmount, currentAccumulatedRewardAmount) || _amount == type(uint256).max),
       "Invalid amount"
     );
 
     ClaimItem storage queueItem = claimQueue[lastClaimQueueID];
 
     uint256 totalAmount = _amount;
-    if (_isSusduWithdraw) {
+    if (_isStakedTokenWithdraw) {
       queueItem.token = _token;
       queueItem.user = msg.sender;
       queueItem.requestTime = block.timestamp;
       queueItem.claimTime = block.timestamp;
-      queueItem.isSusduWithdraw = _isSusduWithdraw;
-      totalAmount = requestSusduWithdraw(_token, _amount, exchangeRate, assetsInfo, queueItem);
+      queueItem.isStakedTokenWithdraw = _isStakedTokenWithdraw;
+      totalAmount = requestStakedTokenWithdraw(_token, _amount, exchangeRate, assetsInfo, queueItem);
     } else {
       // Withdraw from reward first; if insufficient, continue withdrawing from principal
-      (totalAmount,,) = _handleWithdraw(_amount, assetsInfo, queueItem, false);
+      (totalAmount, , ) = _handleWithdraw(_amount, assetsInfo, queueItem, false);
 
       require(totalAmount > 0, "No assets to withdraw");
 
@@ -265,17 +267,17 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
       queueItem.user = msg.sender;
       queueItem.totalAmount = totalAmount;
       queueItem.requestTime = block.timestamp;
-      queueItem.isSusduWithdraw = _isSusduWithdraw;
+      queueItem.isStakedTokenWithdraw = _isStakedTokenWithdraw;
       queueItem.claimTime = Utils.Add(block.timestamp, WAITING_TIME);
     }
     unchecked {
       _returnID = lastClaimQueueID;
       ++lastClaimQueueID;
     }
-    emit RequestClaim(msg.sender, _token, totalAmount, _returnID, _isSusduWithdraw);
+    emit RequestClaim(msg.sender, _token, totalAmount, _returnID, _isStakedTokenWithdraw);
   }
 
-  function requestSusduWithdraw(
+  function requestStakedTokenWithdraw(
     address _token,
     uint256 _amount,
     uint256 _exchangeRate,
@@ -306,7 +308,7 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
 
     if (totalAmount > 0) {
       withdrawVault.transfer(_token, ceffu, totalAmount);
-      escrowVault.recordWithdraw(msg.sender, _token, totalAmount);
+      vaultLedger.recordWithdraw(msg.sender, _token, totalAmount);
       emit CeffuReceive(_token, ceffu, totalAmount);
     }
 
@@ -379,37 +381,31 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     }
     tvl[token] -= claimItem.principalAmount;
 
-    assetsInfo.claimHistory
-      .push(
-        ClaimItem({
-          isDone: true,
-          isSusduWithdraw: claimItem.isSusduWithdraw,
-          token: token,
-          user: msg.sender,
-          totalAmount: claimItem.totalAmount,
-          principalAmount: claimItem.principalAmount,
-          rewardAmount: claimItem.rewardAmount,
-          requestTime: claimItem.requestTime,
-          claimTime: block.timestamp
-        })
-      );
-    uint256 principalAmount = claimItem.principalAmount;
-    uint256 rewardAmount = claimItem.rewardAmount;
+    assetsInfo.claimHistory.push(
+      ClaimItem({
+        isDone: true,
+        isStakedTokenWithdraw: claimItem.isStakedTokenWithdraw,
+        token: token,
+        user: msg.sender,
+        totalAmount: claimItem.totalAmount,
+        principalAmount: claimItem.principalAmount,
+        rewardAmount: claimItem.rewardAmount,
+        requestTime: claimItem.requestTime,
+        claimTime: block.timestamp
+      })
+    );
 
-    if (principalAmount + rewardAmount > 0) {
-      withdrawVault.transfer(token, msg.sender, principalAmount + rewardAmount);
+    if (claimItem.totalAmount > 0) {
+      withdrawVault.transfer(token, msg.sender, claimItem.totalAmount);
     }
 
     emit ClaimAssets(msg.sender, token, claimItem.totalAmount, _queueID);
   }
 
-  function flashWithdrawWithPenalty(address _token, uint256 _amount)
-    external
-    onlySupportedToken(_token)
-    whenNotPaused
-    OnlyFlashEnable
-    nonReentrant
-  {
+  function flashWithdrawWithPenalty(
+    address _token,
+    uint256 _amount
+  ) external onlySupportedToken(_token) whenNotPaused OnlyFlashEnable nonReentrant {
     AssetsInfo storage assetsInfo = userAssetsInfo[msg.sender][_token];
     _updateRewardState(msg.sender, _token);
     uint256 exchangeRate = _getExchangeRate(_token);
@@ -418,15 +414,19 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     uint256 currentAccumulatedRewardAmount = assetsInfo.accumulatedReward;
 
     require(
-      Utils.MustGreaterThanZero(_amount)
-        && (_amount <= Utils.Add(currentStakedAmount, currentAccumulatedRewardAmount) || _amount == type(uint256).max)
+      Utils.MustGreaterThanZero(_amount) &&
+        (_amount <= Utils.Add(currentStakedAmount, currentAccumulatedRewardAmount) || _amount == type(uint256).max)
     );
 
     uint256 totalAmount = _amount;
     uint256 principalAmount;
     uint256 rewardAmount;
-    (totalAmount, principalAmount, rewardAmount) =
-      _handleWithdraw(_amount, assetsInfo, claimQueue[lastClaimQueueID], true);
+    (totalAmount, principalAmount, rewardAmount) = _handleWithdraw(
+      _amount,
+      assetsInfo,
+      claimQueue[lastClaimQueueID],
+      true
+    );
 
     require(totalAmount > 0, "no assets to withdraw");
 
@@ -457,29 +457,30 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
       IERC20(_token).safeTransfer(msg.sender, rewardPayout);
     }
 
-    assetsInfo.claimHistory
-      .push(
-        ClaimItem({
-          isDone: true,
-          // flashWithdraw is only support usdt withdraw.
-          isSusduWithdraw: false,
-          token: _token,
-          user: msg.sender,
-          totalAmount: totalAmount,
-          principalAmount: principalAmount,
-          rewardAmount: rewardAmount,
-          requestTime: block.timestamp,
-          claimTime: block.timestamp
-        })
-      );
+    assetsInfo.claimHistory.push(
+      ClaimItem({
+        isDone: true,
+        // flashWithdraw is only support usdt withdraw.
+        isStakedTokenWithdraw: false,
+        token: _token,
+        user: msg.sender,
+        totalAmount: totalAmount,
+        principalAmount: principalAmount,
+        rewardAmount: rewardAmount,
+        requestTime: block.timestamp,
+        claimTime: block.timestamp
+      })
+    );
 
     emit FlashWithdraw(msg.sender, _token, totalAmount, fee);
   }
 
-  function _handleWithdraw(uint256 _amount, AssetsInfo storage assetsInfo, ClaimItem storage queueItem, bool isFlash)
-    internal
-    returns (uint256, uint256, uint256)
-  {
+  function _handleWithdraw(
+    uint256 _amount,
+    AssetsInfo storage assetsInfo,
+    ClaimItem storage queueItem,
+    bool isFlash
+  ) internal returns (uint256, uint256, uint256) {
     uint256 totalAmount = _amount;
     uint256 principalAmount;
     uint256 rewardAmount;
@@ -534,7 +535,8 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
       exchangeRate = 1e18;
     } else {
       exchangeRate =
-        ((totalStakeAmountByToken[_token] + totalRewardsAmountByToken[_token]) * 1e18) / totalSupplyStakedToken;
+        ((totalStakeAmountByToken[_token] + totalRewardsAmountByToken[_token]) * 1e18) /
+        totalSupplyStakedToken;
     }
   }
 
@@ -543,8 +545,9 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     uint256 totalStaked = totalStakeAmountByToken[_token];
     uint256 totalRewards = _getClaimableRewards(address(this), _token);
 
-    uint256 exchangeRate =
-      totalSupplyStakedToken == 0 ? 1e18 : ((totalStaked + totalRewards) * 1e18) / totalSupplyStakedToken;
+    uint256 exchangeRate = totalSupplyStakedToken == 0
+      ? 1e18
+      : ((totalStaked + totalRewards) * 1e18) / totalSupplyStakedToken;
     shares = (tokenAmount * 1e18) / exchangeRate;
   }
 
@@ -553,17 +556,19 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     uint256 totalStaked = totalStakeAmountByToken[_token];
     uint256 totalRewards = _getClaimableRewards(address(this), _token);
 
-    uint256 exchangeRate =
-      totalSupplyStakedToken == 0 ? 1e18 : ((totalStaked + totalRewards) * 1e18) / totalSupplyStakedToken;
+    uint256 exchangeRate = totalSupplyStakedToken == 0
+      ? 1e18
+      : ((totalStaked + totalRewards) * 1e18) / totalSupplyStakedToken;
 
     tokenAmount = (shares * exchangeRate) / 1e18;
   }
 
-  function transferOrTransferFrom(address token, address from, address to, uint256 amount)
-    public
-    nonReentrant
-    returns (bool)
-  {
+  function transferOrTransferFrom(
+    address token,
+    address from,
+    address to,
+    uint256 amount
+  ) public nonReentrant returns (bool) {
     require(from != to, "from can not be same as the to");
     require(amount > 0, "amount must be greater than 0");
 
@@ -583,10 +588,12 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   }
 
   // Distribute staked tokens (airdrop/allocation)
-  function distributeStaked(address token, address to, uint256 amount, bool enableHistoricalRewards)
-    external
-    nonReentrant
-  {
+  function distributeStaked(
+    address token,
+    address to,
+    uint256 amount,
+    bool enableHistoricalRewards
+  ) external nonReentrant {
     require(msg.sender == distributorAddr, "Unauthorized");
     supportedTokenToStakedToken[token].safeTransferFrom(distributorAddr, to, amount);
 
@@ -628,12 +635,10 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     assetsInfoTo.lastRewardUpdateTime = block.timestamp;
   }
 
-  function transferToCeffu(address _token, uint256 _amount)
-    external
-    onlySupportedToken(_token)
-    onlyRole(BOT_ROLE)
-    nonReentrant
-  {
+  function transferToCeffu(
+    address _token,
+    uint256 _amount
+  ) external onlySupportedToken(_token) onlyRole(BOT_ROLE) nonReentrant {
     require(Utils.MustGreaterThanZero(_amount), "must > 0");
     require(_amount <= IERC20(_token).balanceOf(address(this)), "Not enough balance");
 
@@ -667,10 +672,13 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   ///                                        configuration                                              ///
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function addSupportedToken(address _token, uint256 _minAmount, uint256 _maxAmount, address _stakedToken)
-    external
-    onlyRole(DEFAULT_ADMIN_ROLE)
-  {
+  function addSupportedToken(
+    address _token,
+    uint256 _minAmount,
+    uint256 _maxAmount,
+    address _stakedToken,
+    uint256 _newRewardRate
+  ) external onlyRole(DEFAULT_ADMIN_ROLE) {
     Utils.CheckIsZeroAddress(_token);
     require(!supportedTokens[_token], "Supported");
 
@@ -679,29 +687,40 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     setStakeLimit(_token, _minAmount, _maxAmount);
     emit AddSupportedToken(_token, _minAmount, _maxAmount);
 
+    setRewardRate(_token, _newRewardRate);
+
     IStakedToken stakedToken = IStakedToken(_stakedToken);
     supportedTokenToStakedToken[_token] = stakedToken;
     stakedTokenToSupportedToken[address(stakedToken)] = _token;
     emit StakedTokenRegistered(address(stakedToken), _token);
   }
 
-  function setRewardRate(address _token, uint256 _newRewardRate)
-    external
-    onlySupportedToken(_token)
-    onlyRole(DEFAULT_ADMIN_ROLE)
-  {
-    require(_newRewardRate < BASE, "Invalid rate");
+  function setRewardRate(
+    address _token,
+    uint256 _newRewardRate
+  ) public onlySupportedToken(_token) onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(_newRewardRate < BASE, "Invalid new rate");
 
     RewardRateState[] memory rewardRateArray = rewardRateState[_token];
-    uint256 currentRewardRate = rewardRateArray[rewardRateArray.length - 1].rewardRate;
-    require(currentRewardRate != _newRewardRate && Utils.MustGreaterThanZero(_newRewardRate), "Invalid new rate");
+    if (rewardRateArray.length > 0) {
+      uint256 currentRewardRate = rewardRateArray[rewardRateArray.length - 1].rewardRate;
+      require(currentRewardRate != _newRewardRate, "Invalid new rate");
 
-    // add the new reward rate to the array
-    RewardRateState memory rewardRateItem =
-      RewardRateState({updatedTime: block.timestamp, token: _token, rewardRate: _newRewardRate});
-    rewardRateState[_token].push(rewardRateItem);
+      // add the new reward rate to the array
+      RewardRateState memory rewardRateItem = RewardRateState({
+        updatedTime: block.timestamp,
+        token: _token,
+        rewardRate: _newRewardRate
+      });
+      rewardRateState[_token].push(rewardRateItem);
 
-    emit UpdateRewardRate(_token, currentRewardRate, _newRewardRate);
+      emit UpdateRewardRate(_token, currentRewardRate, _newRewardRate);
+    } else {
+      rewardRateState[_token].push(
+        RewardRateState({ updatedTime: block.timestamp, token: _token, rewardRate: _newRewardRate })
+      );
+      emit UpdateRewardRate(_token, 0, _newRewardRate);
+    }
   }
 
   function setDistributorAddr(address newDistributorAddr) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -709,15 +728,15 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     distributorAddr = newDistributorAddr;
   }
 
-  function setEscrowVault(address newEscrow) external onlyRole(DEFAULT_ADMIN_ROLE) {
-    Utils.CheckIsZeroAddress(newEscrow);
-    require(newEscrow.code.length > 0, "escrow not contract");
-    address current = address(escrowVault);
-    require(newEscrow != current, "no change");
+  function setVaultLedger(address newVaultLedger) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    Utils.CheckIsZeroAddress(newVaultLedger);
+    require(newVaultLedger.code.length > 0, "vault ledger not contract");
+    address current = address(vaultLedger);
+    require(newVaultLedger != current, "no change");
 
-    escrowVault = IVaultEscrow(newEscrow);
+    vaultLedger = IVaultLedger(newVaultLedger);
 
-    emit UpdateEscrowVault(current, newEscrow);
+    emit UpdateVaultLedger(current, newVaultLedger);
   }
 
   function setPenaltyRate(uint256 newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -735,11 +754,11 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     ceffu = _newCeffu;
   }
 
-  function setStakeLimit(address _token, uint256 _minAmount, uint256 _maxAmount)
-    public
-    onlyRole(DEFAULT_ADMIN_ROLE)
-    onlySupportedToken(_token)
-  {
+  function setStakeLimit(
+    address _token,
+    uint256 _minAmount,
+    uint256 _maxAmount
+  ) public onlyRole(DEFAULT_ADMIN_ROLE) onlySupportedToken(_token) {
     require(Utils.MustGreaterThanZero(_minAmount) && _minAmount < _maxAmount);
 
     emit UpdateStakeLimit(_token, minStakeAmount[_token], maxStakeAmount[_token], _minAmount, _maxAmount);
@@ -758,11 +777,11 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   ///                                          view / pure                                              ///
   /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  function calculateReward(uint256 _stakedAmount, uint256 _rewardRate, uint256 _elapsedTime)
-    internal
-    pure
-    returns (uint256 result)
-  {
+  function calculateReward(
+    uint256 _stakedAmount,
+    uint256 _rewardRate,
+    uint256 _elapsedTime
+  ) internal pure returns (uint256 result) {
     // (stakedAmount * rewardRate * elapsedTime) / (ONE_YEAR * 10000)
     // Parameter descriptions:
     // - stakedAmount: The amount staked by the user
@@ -889,11 +908,11 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
 
   // Calculate the total withdrawable amount for a user at a future time,
   // based on the user's current staked amount and the current reward rate.
-  function getClaimableRewardsWithTargetTime(address _user, address _token, uint256 _targetTime)
-    external
-    view
-    returns (uint256)
-  {
+  function getClaimableRewardsWithTargetTime(
+    address _user,
+    address _token,
+    uint256 _targetTime
+  ) external view returns (uint256) {
     require(_targetTime > block.timestamp, "Invalid time");
 
     AssetsInfo memory assetsInfo = userAssetsInfo[_user][_token];
@@ -926,28 +945,26 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     return IERC20(_token).balanceOf(address(this));
   }
 
-  function getEscrowVault() external view returns (address) {
-    return address(escrowVault);
+  function getVaultLedgerAddress() external view returns (address) {
+    return address(vaultLedger);
   }
 
-  function getStakeHistory(address _user, address _token, uint256 _index)
-    external
-    view
-    onlySupportedToken(_token)
-    returns (StakeItem memory)
-  {
+  function getStakeHistory(
+    address _user,
+    address _token,
+    uint256 _index
+  ) external view onlySupportedToken(_token) returns (StakeItem memory) {
     AssetsInfo memory stakeInfo = userAssetsInfo[_user][_token];
     require(_index < stakeInfo.stakeHistory.length, "index");
 
     return stakeInfo.stakeHistory[_index];
   }
 
-  function getClaimHistory(address _user, address _token, uint256 _index)
-    external
-    view
-    onlySupportedToken(_token)
-    returns (ClaimItem memory)
-  {
+  function getClaimHistory(
+    address _user,
+    address _token,
+    uint256 _index
+  ) external view onlySupportedToken(_token) returns (ClaimItem memory) {
     AssetsInfo memory stakeInfo = userAssetsInfo[_user][_token];
     require(_index < stakeInfo.claimHistory.length, "index");
 

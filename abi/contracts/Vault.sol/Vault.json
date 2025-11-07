@@ -58,7 +58,7 @@
       },
       {
         "internalType": "address",
-        "name": "_escrowAddress",
+        "name": "_vaultLedgerAddress",
         "type": "address"
       }
     ],
@@ -360,7 +360,7 @@
       {
         "indexed": false,
         "internalType": "bool",
-        "name": "_isSusduWithdraw",
+        "name": "_isStakedTokenWithdraw",
         "type": "bool"
       }
     ],
@@ -554,25 +554,6 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "oldEscrow",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newEscrow",
-        "type": "address"
-      }
-    ],
-    "name": "UpdateEscrowVault",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
         "internalType": "uint256",
         "name": "oldRate",
         "type": "uint256"
@@ -653,6 +634,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldVaultLedger",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newVaultLedger",
+        "type": "address"
+      }
+    ],
+    "name": "UpdateVaultLedger",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "_oldWaitingTime",
@@ -715,6 +715,11 @@
         "internalType": "address",
         "name": "_stakedToken",
         "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newRewardRate",
+        "type": "uint256"
       }
     ],
     "name": "addSupportedToken",
@@ -899,7 +904,7 @@
           },
           {
             "internalType": "bool",
-            "name": "isSusduWithdraw",
+            "name": "isStakedTokenWithdraw",
             "type": "bool"
           },
           {
@@ -1013,7 +1018,7 @@
           },
           {
             "internalType": "bool",
-            "name": "isSusduWithdraw",
+            "name": "isStakedTokenWithdraw",
             "type": "bool"
           },
           {
@@ -1175,19 +1180,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getEscrowVault",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -1379,6 +1371,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "getVaultLedgerAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -1523,7 +1528,7 @@
       },
       {
         "internalType": "bool",
-        "name": "_isSusduWithdraw",
+        "name": "_isStakedTokenWithdraw",
         "type": "bool"
       }
     ],
@@ -1598,19 +1603,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "newEscrow",
-        "type": "address"
-      }
-    ],
-    "name": "setEscrowVault",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bool",
         "name": "_enable",
         "type": "bool"
@@ -1671,6 +1663,19 @@
       }
     ],
     "name": "setStakeLimit",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newVaultLedger",
+        "type": "address"
+      }
+    ],
+    "name": "setVaultLedger",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -3,243 +3,350 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 
-import {Vault} from "../contracts/Vault.sol";
-import {StakedToken} from "../contracts/StakedToken.sol";
-import {WithdrawVault} from "../contracts/WithdrawVault.sol";
-import {VaultEscrow} from "../contracts/VaultEscrow.sol";
-import {ClaimItem} from "../contracts/IVault.sol";
-import {MockToken} from "../contracts/mock/MockToken.sol";
+import { Vault } from "../contracts/Vault.sol";
+import { StakedToken } from "../contracts/StakedToken.sol";
+import { WithdrawVault } from "../contracts/WithdrawVault.sol";
+import { VaultLedger } from "../contracts/VaultLedger.sol";
+import { ClaimItem } from "../contracts/IVault.sol";
+import { MockToken } from "../contracts/mock/MockToken.sol";
 
-// contract VaultBoosterTest is Test {
-//   uint256 private constant _BASE = 10_000;
-//   uint256 private constant _ONE_YEAR = 31557600;
-//   uint256 private constant _PENALTY_RATE = 50; // 0.5%
+contract VaultBoosterTest is Test {
+  uint256 private constant _BASE = 10_000;
+  uint256 private constant _ONE_YEAR = 31557600;
+  uint256 private constant _PENALTY_RATE = 50; // 0.5%
 
-//   Vault internal _vault;
-//   StakedToken internal _stakedToken;
-//   WithdrawVault internal _withdrawVault;
-//   VaultEscrow internal _vaultEscrow;
-//   MockToken internal _underlying;
+  Vault internal _vault;
+  StakedToken internal _stakedToken;
+  WithdrawVault internal _withdrawVault;
+  VaultLedger internal _vaultLedger;
+  MockToken internal _underlying;
 
-//   address internal _admin;
-//   address internal _bot;
-//   address internal _ceffu;
-//   address internal _distributor;
-//   address internal _alice;
+  address internal _admin;
+  address internal _bot;
+  address internal _ceffu;
+  address internal _distributor;
+  address internal _alice;
 
-//   uint256 internal _waitingTime = 3 days;
-//   uint256 internal _rewardRate = 1_000; // 10% APR
+  uint256 internal _waitingTime = 3 days;
+  uint256 internal _rewardRate = 1_000; // 10% APR
 
-//   function setUp() public {
-//     _admin = address(this);
-//     _bot = makeAddr("bot");
-//     _ceffu = makeAddr("ceffu");
-//     _distributor = makeAddr("distributor");
-//     _alice = makeAddr("alice");
+  function setUp() public {
+    _admin = address(this);
+    _bot = makeAddr("bot");
+    _ceffu = makeAddr("ceffu");
+    _distributor = makeAddr("distributor");
+    _alice = makeAddr("alice");
 
-//     _underlying = new MockToken("Mock Token", "MOCK", 18, _admin);
-//     _stakedToken = new StakedToken("Staked Mock", "sMOCK", _admin);
+    _underlying = new MockToken("Mock Token", "MOCK", 18, _admin);
+    _stakedToken = new StakedToken("Staked Mock", "sMOCK", _admin);
 
-//     address[] memory tokens = new address[](1);
-//     tokens[0] = address(_underlying);
+    address[] memory tokens = new address[](1);
+    tokens[0] = address(_underlying);
 
-//     address[] memory stakedTokens = new address[](1);
-//     stakedTokens[0] = address(_stakedToken);
+    address[] memory stakedTokens = new address[](1);
+    stakedTokens[0] = address(_stakedToken);
 
-//     uint256[] memory rewardRates = new uint256[](1);
-//     rewardRates[0] = _rewardRate;
+    uint256[] memory rewardRates = new uint256[](1);
+    rewardRates[0] = _rewardRate;
 
-//     uint256[] memory minStakeAmounts = new uint256[](1);
-//     minStakeAmounts[0] = 1 ether;
+    uint256[] memory minStakeAmounts = new uint256[](1);
+    minStakeAmounts[0] = 1 ether;
 
-//     uint256[] memory maxStakeAmounts = new uint256[](1);
-//     maxStakeAmounts[0] = 1_000_000 ether;
+    uint256[] memory maxStakeAmounts = new uint256[](1);
+    maxStakeAmounts[0] = 1_000_000 ether;
 
-//     _withdrawVault = new WithdrawVault(tokens, _admin, _bot, _ceffu);
-//     _vaultEscrow = new VaultEscrow(_admin);
+    _withdrawVault = new WithdrawVault(tokens, _admin, _bot, _ceffu);
+    _vaultLedger = new VaultLedger(_admin);
 
-//     _vault = new Vault(
-//       tokens,
-//       stakedTokens,
-//       rewardRates,
-//       minStakeAmounts,
-//       maxStakeAmounts,
-//       _admin,
-//       _bot,
-//       _ceffu,
-//       _waitingTime,
-//       payable(address(_withdrawVault)),
-//       _distributor,
-//       address(_vaultEscrow)
-//     );
+    _vault = new Vault(
+      tokens,
+      stakedTokens,
+      rewardRates,
+      minStakeAmounts,
+      maxStakeAmounts,
+      _admin,
+      _bot,
+      _ceffu,
+      _waitingTime,
+      payable(address(_withdrawVault)),
+      _distributor,
+      address(_vaultLedger)
+    );
 
-//     _stakedToken.setMinter(address(_vault), address(_vault));
-//     _withdrawVault.setVault(address(_vault));
-//     _vaultEscrow.setVault(address(_vault), true);
-//     _vaultEscrow.setDistributor(_distributor, true);
+    _stakedToken.setMinter(address(_vault), address(_vault));
+    _withdrawVault.setVault(address(_vault));
+    _vaultLedger.setVault(address(_vault), true);
+    _vaultLedger.setDistributor(_distributor, true);
+    _vaultLedger.addAllowToken(address(_underlying));
 
-//     _vault.unpause();
+    _vault.unpause();
+    _vault.setCancelEnable(false);
 
-//     // distribute test funds
-//     _underlying.transfer(_alice, 1_000 ether);
-//   }
+    _underlying.transfer(_alice, 1_000 ether);
+  }
 
-//   function _stakeForAlice(uint256 amount) internal {
-//     vm.startPrank(_alice);
-//     _underlying.approve(address(_vault), amount);
-//     _vault.stake_66380860(address(_underlying), amount);
-//     vm.stopPrank();
-//   }
+  function _stakeForAlice(uint256 amount) internal {
+    vm.startPrank(_alice);
+    _underlying.approve(address(_vault), amount);
+    _vault.stake_66380860(address(_underlying), amount);
+    vm.stopPrank();
+  }
 
-//   function _expectedReward(uint256 principal, uint256 elapsed) internal view returns (uint256) {
-//     return (principal * _rewardRate * elapsed) / (_ONE_YEAR * _BASE);
-//   }
+  function _expectedReward(uint256 principal, uint256 elapsed) internal view returns (uint256) {
+    return (principal * _rewardRate * elapsed) / (_ONE_YEAR * _BASE);
+  }
 
-//   function testStakeUpdatesState() public {
-//     uint256 amount = 100 ether;
-//     _stakeForAlice(amount);
+  function testStakeUpdatesState() public {
+    uint256 amount = 100 ether;
+    uint256 aliceBalanceBefore = _underlying.balanceOf(_alice);
 
-//     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), amount);
-//     uint256 stakedBalance = _stakedToken.balanceOf(_alice);
-//     uint256 assetsEquivalent = _vault.convertToAssets(stakedBalance, address(_underlying));
-//     assertApproxEqAbs(assetsEquivalent, amount, 100);
-//     assertEq(_vault.totalStakeAmountByToken(address(_underlying)), amount);
-//     assertEq(_vault.getTVL(address(_underlying)), amount);
-//   }
+    _stakeForAlice(amount);
 
-//   function testRequestAndClaimAll() public {
-//     uint256 amount = 200 ether;
-//     uint256 aliceInitialBalance = _underlying.balanceOf(_alice);
-//     _stakeForAlice(amount);
+    assertEq(_vault.getStakedAmount(_alice, address(_underlying)), amount);
+    uint256 stakedBalance = _stakedToken.balanceOf(_alice);
+    uint256 assetsEquivalent = _vault.convertToAssets(stakedBalance, address(_underlying));
+    assertApproxEqAbs(assetsEquivalent, amount, 1);
+    assertEq(_vault.getTVL(address(_underlying)), amount);
+    assertEq(_underlying.balanceOf(_alice), aliceBalanceBefore - amount);
+  }
 
-//     uint256 elapsed = _ONE_YEAR;
-//     vm.warp(block.timestamp + elapsed);
+  function testRequestAndClaimAll() public {
+    uint256 amount = 200 ether;
+    uint256 aliceInitialBalance = _underlying.balanceOf(_alice);
+    _stakeForAlice(amount);
 
-//     vm.startPrank(_alice);
-//     uint256 queueId = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, false);
-//     vm.stopPrank();
+    uint256 elapsed = _ONE_YEAR;
+    vm.warp(block.timestamp + elapsed);
 
-//     ClaimItem memory claimItem = _vault.getClaimQueueInfo(queueId);
-//     uint256 expectedReward = _expectedReward(amount, elapsed);
+    vm.startPrank(_alice);
+    uint256 queueId = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, false);
+    vm.stopPrank();
 
-//     assertEq(claimItem.totalAmount, amount + expectedReward);
-//     assertEq(claimItem.rewardAmount, expectedReward);
-//     assertEq(claimItem.principalAmount, amount);
+    ClaimItem memory claimItem = _vault.getClaimQueueInfo(queueId);
+    uint256 expectedReward = _expectedReward(amount, elapsed);
 
-//     uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
-//     assertEq(queueIds.length, 1);
-//     assertEq(queueIds[0], queueId);
+    assertEq(claimItem.principalAmount, amount);
+    assertApproxEqAbs(claimItem.rewardAmount, expectedReward, 1);
+    assertEq(claimItem.totalAmount, claimItem.principalAmount + claimItem.rewardAmount);
+    assertFalse(claimItem.isStakedTokenWithdraw);
+    assertFalse(claimItem.isDone);
 
-//     // fund withdraw vault before claim
-//     _underlying.transfer(address(_withdrawVault), claimItem.totalAmount);
+    uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
+    assertEq(queueIds.length, 1);
+    assertEq(queueIds[0], queueId);
 
-//     vm.warp(claimItem.claimTime + 1);
+    _underlying.transfer(address(_withdrawVault), claimItem.totalAmount);
 
-//     vm.startPrank(_alice);
-//     _vault.claim_41202704(queueId, address(_underlying));
-//     vm.stopPrank();
+    vm.warp(claimItem.claimTime + 1);
 
-//     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
-//     assertEq(_stakedToken.balanceOf(_alice), 0);
-//     assertEq(_vault.getTVL(address(_underlying)), 0);
-//     assertEq(_underlying.balanceOf(_alice), aliceInitialBalance);
-//     assertEq(_underlying.balanceOf(address(_vaultEscrow)), expectedReward);
-//     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
-//   }
+    uint256 aliceBalanceBeforeClaim = _underlying.balanceOf(_alice);
 
-//   function testDistributorCanReleaseRewards() public {
-//     uint256 amount = 200 ether;
-//     _stakeForAlice(amount);
+    vm.startPrank(_alice);
+    _vault.claim_41202704(queueId, address(_underlying));
+    vm.stopPrank();
 
-//     uint256 elapsed = _ONE_YEAR / 2;
-//     vm.warp(block.timestamp + elapsed);
+    assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
+    assertEq(_stakedToken.balanceOf(_alice), 0);
+    assertEq(_vault.getTVL(address(_underlying)), 0);
+    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
+    assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
 
-//     vm.startPrank(_alice);
-//     uint256 queueId = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, false);
-//     vm.stopPrank();
+    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + claimItem.totalAmount, 1);
 
-//     ClaimItem memory claimItem = _vault.getClaimQueueInfo(queueId);
-//     _underlying.transfer(address(_withdrawVault), claimItem.totalAmount);
+    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceInitialBalance + expectedReward, 1);
+  }
 
-//     vm.warp(claimItem.claimTime + 1);
+  function testRequestClaimRewardsOnlyUsesRewardsFirst() public {
+    uint256 amount = 200 ether;
+    uint256 aliceInitialBalance = _underlying.balanceOf(_alice);
+    _stakeForAlice(amount);
 
-//     uint256 aliceBalanceBeforeClaim = _underlying.balanceOf(_alice);
+    uint256 elapsed = 120 days;
+    vm.warp(block.timestamp + elapsed);
 
-//     vm.startPrank(_alice);
-//     _vault.claim_41202704(queueId, address(_underlying));
-//     vm.stopPrank();
+    uint256 totalReward = _expectedReward(amount, elapsed);
+    uint256 withdrawAmount = totalReward / 2;
+    assertGt(withdrawAmount, 0);
 
-//     assertEq(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + claimItem.principalAmount);
+    vm.startPrank(_alice);
+    uint256 queueId = _vault.requestClaim_8135334(address(_underlying), withdrawAmount, false);
+    vm.stopPrank();
 
-//     uint256 distributorBalanceBefore = _underlying.balanceOf(_distributor);
-//     uint256 aliceBalanceBeforeDisperse = _underlying.balanceOf(_alice);
+    ClaimItem memory queueItem = _vault.getClaimQueueInfo(queueId);
 
-//     vm.startPrank(_distributor);
-//     uint256 dispersed = _vaultEscrow.disperseToken(
-//       _alice, address(_underlying), claimItem.rewardAmount, address(_underlying), claimItem.rewardAmount
-//     );
-//     vm.stopPrank();
+    assertEq(queueItem.rewardAmount, withdrawAmount);
+    assertEq(queueItem.principalAmount, 0);
+    assertEq(queueItem.totalAmount, withdrawAmount);
+    assertFalse(queueItem.isStakedTokenWithdraw);
+    assertFalse(queueItem.isDone);
 
-//     assertEq(dispersed, claimItem.rewardAmount);
-//     assertEq(_vaultEscrow.pendingReward(_alice, address(_underlying)), 0);
-//     assertEq(_underlying.balanceOf(_distributor), distributorBalanceBefore);
+    assertEq(_vault.getStakedAmount(_alice, address(_underlying)), amount);
+    assertGt(_stakedToken.balanceOf(_alice), 0);
 
-//     assertEq(_underlying.balanceOf(_alice), aliceBalanceBeforeDisperse + claimItem.rewardAmount);
-//   }
+    uint256 assetsEquivalent = _vault.convertToAssets(_stakedToken.balanceOf(_alice), address(_underlying));
+    assertApproxEqAbs(assetsEquivalent, amount + totalReward - withdrawAmount, 200);
 
-//   function testCancelClaimRestoresPosition() public {
-//     uint256 amount = 150 ether;
-//     _stakeForAlice(amount);
+    _underlying.transfer(address(_withdrawVault), queueItem.totalAmount);
 
-//     vm.warp(block.timestamp + 30 days);
+    vm.warp(queueItem.claimTime + 1);
 
-//     vm.startPrank(_alice);
-//     uint256 queueId = _vault.requestClaim_8135334(address(_underlying), amount / 2);
-//     vm.stopPrank();
+    uint256 aliceBalanceBeforeClaim = _underlying.balanceOf(_alice);
 
-//     _vault.setCancelEnable(false);
+    vm.startPrank(_alice);
+    _vault.claim_41202704(queueId, address(_underlying));
+    vm.stopPrank();
 
-//     vm.startPrank(_alice);
-//     _vault.cancelClaim(queueId, address(_underlying));
-//     vm.stopPrank();
+    assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
+    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
+    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + queueItem.totalAmount, 2);
+    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceInitialBalance - amount + queueItem.totalAmount, 2);
+    assertEq(_vault.getTVL(address(_underlying)), amount);
 
-//     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 0);
-//     assertApproxEqAbs(_vault.getStakedAmount(_alice, address(_underlying)), amount, 100);
-//     uint256 stakedBalance = _stakedToken.balanceOf(_alice);
-//     uint256 assetsEquivalent = _vault.convertToAssets(stakedBalance, address(_underlying));
-//     uint256 pendingReward = _vault.getClaimableRewards(_alice, address(_underlying));
-//     assertApproxEqAbs(assetsEquivalent, amount + pendingReward, 100);
-//     assertGt(pendingReward, 0);
+    uint256 remainingRewards = _vault.getClaimableRewards(_alice, address(_underlying));
+    uint256 waitElapsed = (queueItem.claimTime + 1) - queueItem.requestTime;
+    uint256 expectedRemainingRewards = totalReward - withdrawAmount + _expectedReward(amount, waitElapsed);
+    assertApproxEqAbs(remainingRewards, expectedRemainingRewards, 200);
+  }
 
-//     uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
-//     assertEq(queueIds.length, 0);
-//   }
+  function testCancelClaimRestoresPrincipalAndRewards() public {
+    uint256 amount = 180 ether;
+    _stakeForAlice(amount);
 
-//   function testFlashWithdrawAppliesPenalty() public {
-//     uint256 amount = 100 ether;
-//     uint256 aliceInitialBalance = _underlying.balanceOf(_alice);
-//     _stakeForAlice(amount);
+    uint256 elapsed = 200 days;
+    vm.warp(block.timestamp + elapsed);
 
-//     _vault.setFlashEnable(false);
-//     uint256 elapsed = _ONE_YEAR / 4;
-//     vm.warp(block.timestamp + elapsed);
+    vm.startPrank(_alice);
+    uint256 queueId = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, false);
+    vm.stopPrank();
 
-//     uint256 expectedReward = _expectedReward(amount, elapsed);
-//     _underlying.transfer(address(_vault), expectedReward);
+    ClaimItem memory queued = _vault.getClaimQueueInfo(queueId);
+    assertEq(queued.principalAmount, amount);
+    assertGt(queued.rewardAmount, 0);
+    assertFalse(queued.isDone);
 
-//     uint256 principalPayout = (amount * (_BASE - _PENALTY_RATE)) / _BASE;
-//     uint256 rewardPayout = (expectedReward * (_BASE - _PENALTY_RATE)) / _BASE;
-//     uint256 expectedFee = amount + expectedReward - principalPayout - rewardPayout;
+    vm.startPrank(_alice);
+    _vault.cancelClaim(queueId, address(_underlying));
+    vm.stopPrank();
 
-//     vm.startPrank(_alice);
-//     _vault.flashWithdrawWithPenalty(address(_underlying), type(uint256).max);
-//     vm.stopPrank();
+    ClaimItem memory cleared = _vault.getClaimQueueInfo(queueId);
+    assertEq(cleared.totalAmount, 0);
+    assertEq(cleared.user, address(0));
 
-//     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
-//     assertEq(_stakedToken.balanceOf(_alice), 0);
-//     assertEq(_underlying.balanceOf(_alice), aliceInitialBalance - amount + principalPayout);
-//     assertEq(_vaultEscrow.pendingReward(_alice, address(_underlying)), rewardPayout);
-//     assertEq(_underlying.balanceOf(address(_vaultEscrow)), rewardPayout);
-//     assertEq(_underlying.balanceOf(address(_vault)), expectedFee);
-//   }
-// }
+    assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 0);
+
+    uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
+    assertEq(queueIds.length, 0);
+
+    assertEq(_vault.getStakedAmount(_alice, address(_underlying)), amount);
+
+    uint256 claimableRewards = _vault.getClaimableRewards(_alice, address(_underlying));
+    assertApproxEqAbs(claimableRewards, queued.rewardAmount, 2);
+
+    uint256 stakedAssets = _vault.convertToAssets(_stakedToken.balanceOf(_alice), address(_underlying));
+    assertApproxEqAbs(stakedAssets, queued.principalAmount + queued.rewardAmount, 200);
+  }
+
+  function testRequestSusduWithdrawRecordsEscrow() public {
+    uint256 amount = 150 ether;
+    _stakeForAlice(amount);
+
+    uint256 elapsed = 30 days;
+    vm.warp(block.timestamp + elapsed);
+
+    uint256 expectedReward = _expectedReward(amount, elapsed);
+    _underlying.transfer(address(_withdrawVault), amount + expectedReward + 1 ether);
+
+    uint256 ceffuBalanceBefore = _underlying.balanceOf(_ceffu);
+
+    vm.startPrank(_alice);
+    uint256 queueId = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, true);
+    vm.stopPrank();
+
+    ClaimItem memory queueItem = _vault.getClaimQueueInfo(queueId);
+
+    assertTrue(queueItem.isDone);
+    assertTrue(queueItem.isStakedTokenWithdraw);
+    assertEq(queueItem.totalAmount, queueItem.principalAmount + queueItem.rewardAmount);
+    assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
+    assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
+    assertEq(_stakedToken.balanceOf(_alice), 0);
+    assertEq(_vault.getTVL(address(_underlying)), 0);
+
+    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), queueItem.totalAmount);
+    assertEq(_underlying.balanceOf(_ceffu), ceffuBalanceBefore + queueItem.totalAmount);
+
+    uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
+    assertEq(queueIds.length, 0);
+
+    assertApproxEqAbs(queueItem.rewardAmount, expectedReward, 2);
+  }
+
+  function testDisperseTokenClearsPendingWithdraw() public {
+    uint256 amount = 250 ether;
+    _stakeForAlice(amount);
+
+    uint256 elapsed = 45 days;
+    vm.warp(block.timestamp + elapsed);
+
+    uint256 expectedReward = _expectedReward(amount, elapsed);
+    _underlying.transfer(address(_withdrawVault), amount + expectedReward + 1 ether);
+
+    vm.startPrank(_alice);
+    uint256 queueId = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, true);
+    vm.stopPrank();
+
+    ClaimItem memory queueItem = _vault.getClaimQueueInfo(queueId);
+    uint256 pendingAmount = _vaultLedger.getAvailableAmount(_alice, address(_underlying));
+    assertEq(pendingAmount, queueItem.totalAmount);
+
+    _underlying.transfer(_distributor, queueItem.totalAmount);
+
+    uint256 aliceBalanceBefore = _underlying.balanceOf(_alice);
+
+    vm.startPrank(_distributor);
+    _underlying.approve(address(_vaultLedger), queueItem.totalAmount);
+    uint256 dispersed = _vaultLedger.disperseToken(
+      _alice,
+      address(_underlying),
+      queueItem.totalAmount,
+      _distributor,
+      address(_underlying),
+      queueItem.totalAmount
+    );
+    vm.stopPrank();
+
+    assertEq(dispersed, queueItem.totalAmount);
+    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
+    assertEq(_underlying.balanceOf(_alice), aliceBalanceBefore + queueItem.totalAmount);
+  }
+
+  function testFlashWithdrawAppliesPenalty() public {
+    uint256 amount = 100 ether;
+    uint256 aliceInitialBalance = _underlying.balanceOf(_alice);
+    _stakeForAlice(amount);
+
+    _vault.setFlashEnable(false);
+    uint256 elapsed = _ONE_YEAR / 4;
+    vm.warp(block.timestamp + elapsed);
+
+    uint256 expectedReward = _expectedReward(amount, elapsed);
+    _underlying.transfer(address(_vault), expectedReward);
+
+    vm.startPrank(_alice);
+    _vault.flashWithdrawWithPenalty(address(_underlying), type(uint256).max);
+    vm.stopPrank();
+
+    uint256 principalPayout = (amount * (_BASE - _PENALTY_RATE)) / _BASE;
+    uint256 rewardPayout = (expectedReward * (_BASE - _PENALTY_RATE)) / _BASE;
+    uint256 expectedFee = amount + expectedReward - principalPayout - rewardPayout;
+
+    assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
+    assertEq(_stakedToken.balanceOf(_alice), 0);
+    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
+    assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
+
+    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceInitialBalance - amount + principalPayout + rewardPayout, 1);
+
+    assertApproxEqAbs(_underlying.balanceOf(address(_vault)), expectedFee, 1);
+  }
+}

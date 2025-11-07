@@ -6,16 +6,18 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import "./IVaultEscrow.sol";
+import "./IVaultLedger.sol";
 
-contract VaultEscrow is IVaultEscrow, AccessControl, ReentrancyGuard {
+contract VaultLedger is IVaultLedger, AccessControl, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
   bytes32 public constant VAULT_ROLE = keccak256("VAULT_ROLE");
   bytes32 public constant DISTRIBUTOR_ROLE = keccak256("DISTRIBUTOR_ROLE");
 
-  // user => token => amount
-  mapping(address => mapping(address => uint256)) private _pendingWithdraws;
+  // user => recordToken => disperse summary
+  mapping(address => mapping(address => DisperseRecord)) private _disperseRecords;
+  // allow token list to disperse
+  mapping(address => bool) private _allowTokens;
 
   event WithdrawRecorded(address indexed user, address indexed token, uint256 amount);
   event WithdrawDispersed(
@@ -32,19 +34,31 @@ contract VaultEscrow is IVaultEscrow, AccessControl, ReentrancyGuard {
   constructor(address admin) {
     require(admin != address(0), "admin zero");
     _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    _grantRole(DISTRIBUTOR_ROLE, admin);
   }
 
-  function recordWithdraw(address user, address token, uint256 amount)
-    external
-    override
-    onlyRole(VAULT_ROLE)
-    nonReentrant
-  {
+  function addAllowToken(address token) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(token != address(0), "token zero");
+    _allowTokens[token] = true;
+  }
+
+  function removeAllowToken(address token) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    require(token != address(0), "token zero");
+    _allowTokens[token] = false;
+  }
+
+  function recordWithdraw(
+    address user,
+    address token,
+    uint256 amount
+  ) external override onlyRole(VAULT_ROLE) nonReentrant {
     require(user != address(0), "user zero");
     require(token != address(0), "token zero");
     require(amount > 0, "amount zero");
 
-    _pendingWithdraws[user][token] += amount;
+    DisperseRecord storage record = _disperseRecords[user][token];
+    record.recordedAmount += amount;
+    record.lastUpdated = block.timestamp;
 
     emit WithdrawRecorded(user, token, amount);
   }
@@ -56,25 +70,33 @@ contract VaultEscrow is IVaultEscrow, AccessControl, ReentrancyGuard {
     address from,
     address withdrawToken,
     uint256 withdrawAmount
-  ) external override nonReentrant returns (uint256) {
+  ) external override onlyRole(DISTRIBUTOR_ROLE) nonReentrant returns (uint256) {
     require(user != address(0), "user zero");
     require(recordToken != address(0) && withdrawToken != address(0), "token zero");
+    require(_allowTokens[withdrawToken], "token not allowed");
     require(freezeRecordAmount > 0 && withdrawAmount > 0, "amount zero");
-    require(hasRole(DISTRIBUTOR_ROLE, msg.sender) || hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "unauthorized");
 
-    uint256 pendingWithdrawAmount = _pendingWithdraws[user][recordToken];
-    require(pendingWithdrawAmount >= freezeRecordAmount, "insufficient withdraw");
-
-    _pendingWithdraws[user][recordToken] = pendingWithdrawAmount - freezeRecordAmount;
+    DisperseRecord storage record = _disperseRecords[user][recordToken];
+    uint256 availableAmount = record.recordedAmount - record.deductedAmount;
+    require(availableAmount >= freezeRecordAmount, "insufficient withdraw");
 
     IERC20(withdrawToken).safeTransferFrom(from, user, withdrawAmount);
+
+    record.deductedAmount += freezeRecordAmount;
+    record.dispersedAmount += withdrawAmount;
+    record.lastUpdated = block.timestamp;
 
     emit WithdrawDispersed(user, recordToken, freezeRecordAmount, withdrawToken, withdrawAmount, from);
     return withdrawAmount;
   }
 
-  function pendingWithdraw(address user, address token) external view override returns (uint256) {
-    return _pendingWithdraws[user][token];
+  function getAvailableAmount(address user, address token) external view override returns (uint256) {
+    DisperseRecord memory record = _disperseRecords[user][token];
+    return record.recordedAmount - record.deductedAmount;
+  }
+
+  function getDisperseRecord(address user, address recordToken) external view override returns (DisperseRecord memory) {
+    return _disperseRecords[user][recordToken];
   }
 
   function setVault(address vault, bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE) {

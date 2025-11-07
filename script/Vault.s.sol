@@ -19,7 +19,7 @@ contract VaultStakeScript is Script {
     vm.selectFork(forkId);
 
     _underlying = MockToken(0x7166A5e1Af969342068DeF6A7BD26DbA036AED75);
-    _vault = Vault(payable(0x2171312cc771ba0aaAB235184d49c92f889a3E04));
+    _vault = Vault(payable(0xa36eD436cF6551711775BfF958a1225BEa84e0A0));
     vincentPk = vm.envUint("TESTNET_PRIVATE_KEY");
     vincent = vm.addr(vincentPk);
   }
@@ -47,7 +47,7 @@ contract VaultSetRewardRateScript is Script {
     vm.selectFork(forkId);
 
     _underlying = MockToken(0x7166A5e1Af969342068DeF6A7BD26DbA036AED75);
-    _vault = Vault(payable(0x2171312cc771ba0aaAB235184d49c92f889a3E04));
+    _vault = Vault(payable(0xa36eD436cF6551711775BfF958a1225BEa84e0A0));
     vincentPk = vm.envUint("TESTNET_PRIVATE_KEY");
     vincent = vm.addr(vincentPk);
   }
