@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { Script } from "forge-std/Script.sol";
-import { Vault } from "../contracts/Vault.sol";
-import { MockToken } from "../contracts/mock/MockToken.sol";
+import {Script} from "forge-std/Script.sol";
+import {Vault} from "../contracts/Vault.sol";
+import {MockToken} from "../contracts/mock/MockToken.sol";
 
 contract VaultStakeScript is Script {
   Vault internal _vault;
@@ -18,8 +18,8 @@ contract VaultStakeScript is Script {
     );
     vm.selectFork(forkId);
 
-    _underlying = MockToken(0x7166A5e1Af969342068DeF6A7BD26DbA036AED75);
-    _vault = Vault(payable(0xa36eD436cF6551711775BfF958a1225BEa84e0A0));
+    _underlying = MockToken(0x42e3D7f4cfE3B94BCeF3EBaEa832326AcB40C142);
+    _vault = Vault(payable(0xcE56FA9e9692Df22984A91628e1bD9206e487535));
     vincentPk = vm.envUint("TESTNET_PRIVATE_KEY");
     vincent = vm.addr(vincentPk);
   }
@@ -46,8 +46,8 @@ contract VaultSetRewardRateScript is Script {
     );
     vm.selectFork(forkId);
 
-    _underlying = MockToken(0x7166A5e1Af969342068DeF6A7BD26DbA036AED75);
-    _vault = Vault(payable(0xa36eD436cF6551711775BfF958a1225BEa84e0A0));
+    _underlying = MockToken(0x42e3D7f4cfE3B94BCeF3EBaEa832326AcB40C142);
+    _vault = Vault(payable(0xcE56FA9e9692Df22984A91628e1bD9206e487535));
     vincentPk = vm.envUint("TESTNET_PRIVATE_KEY");
     vincent = vm.addr(vincentPk);
   }
