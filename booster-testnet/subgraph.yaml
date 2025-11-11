@@ -1,0 +1,92 @@
+specVersion: 1.3.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: BoosterVault
+    network: chapel
+    source:
+      address: "0xcE56FA9e9692Df22984A91628e1bD9206e487535"
+      abi: BoosterVault
+      startBlock: 71539411
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - AddSupportedToken
+        - CancelClaim
+        - CancelStatusChanged
+        - CeffuReceive
+        - ClaimAssets
+        - EmergencyWithdrawal
+        - FlashStatusChanged
+        - FlashWithdraw
+        - Paused
+        - RequestClaim
+        - RoleAdminChanged
+        - RoleGranted
+        - RoleRevoked
+        - Stake
+        - StakedDistributed
+        - StakedTokenRegistered
+        - Unpaused
+        - UpdateCeffu
+        - UpdatePenaltyRate
+        - UpdateRewardRate
+        - UpdateStakeLimit
+        - UpdateVaultLedger
+        - UpdateWaitingTime
+      abis:
+        - name: BoosterVault
+          file: ./abis/BoosterVault.json
+      eventHandlers:
+        - event: AddSupportedToken(indexed address,uint256,uint256)
+          handler: handleAddSupportedToken
+        - event: CancelClaim(indexed address,indexed address,indexed uint256,uint256)
+          handler: handleCancelClaim
+        - event: CancelStatusChanged(indexed bool,indexed bool)
+          handler: handleCancelStatusChanged
+        - event: CeffuReceive(indexed address,address,indexed uint256)
+          handler: handleCeffuReceive
+        - event: ClaimAssets(indexed address,indexed address,indexed uint256,uint256)
+          handler: handleClaimAssets
+        - event: EmergencyWithdrawal(indexed address,indexed address)
+          handler: handleEmergencyWithdrawal
+        - event: FlashStatusChanged(indexed bool,indexed bool)
+          handler: handleFlashStatusChanged
+        - event: FlashWithdraw(indexed address,indexed address,indexed uint256,uint256)
+          handler: handleFlashWithdraw
+        - event: Paused(address)
+          handler: handlePaused
+        - event: RequestClaim(address,indexed address,indexed uint256,indexed uint256,bool)
+          handler: handleRequestClaim
+        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
+          handler: handleRoleAdminChanged
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+        - event: Stake(indexed address,indexed address,indexed uint256)
+          handler: handleStake
+        - event: StakedDistributed(indexed address,indexed address,uint256,bool)
+          handler: handleStakedDistributed
+        - event: StakedTokenRegistered(indexed address,indexed address)
+          handler: handleStakedTokenRegistered
+        - event: Unpaused(address)
+          handler: handleUnpaused
+        - event: UpdateCeffu(address,address)
+          handler: handleUpdateCeffu
+        - event: UpdatePenaltyRate(indexed uint256,indexed uint256)
+          handler: handleUpdatePenaltyRate
+        - event: UpdateRewardRate(address,uint256,uint256)
+          handler: handleUpdateRewardRate
+        - event: UpdateStakeLimit(indexed address,uint256,uint256,uint256,uint256)
+          handler: handleUpdateStakeLimit
+        - event: UpdateVaultLedger(indexed address,indexed address)
+          handler: handleUpdateVaultLedger
+        - event: UpdateWaitingTime(uint256,uint256)
+          handler: handleUpdateWaitingTime
+      file: ./src/booster-vault.ts

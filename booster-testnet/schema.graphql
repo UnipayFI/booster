@@ -1,0 +1,225 @@
+type AddSupportedToken @entity(immutable: true) {
+  id: Bytes!
+  _token: Bytes! # address
+  _minAmount: BigInt! # uint256
+  _maxAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CancelClaim @entity(immutable: true) {
+  id: Bytes!
+  user: Bytes! # address
+  _token: Bytes! # address
+  _amount: BigInt! # uint256
+  internal__id: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CancelStatusChanged @entity(immutable: true) {
+  id: Bytes!
+  oldStatus: Boolean! # bool
+  newStatus: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CeffuReceive @entity(immutable: true) {
+  id: Bytes!
+  _token: Bytes! # address
+  _ceffu: Bytes! # address
+  _amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ClaimAssets @entity(immutable: true) {
+  id: Bytes!
+  _user: Bytes! # address
+  _token: Bytes! # address
+  _amount: BigInt! # uint256
+  internal__id: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type EmergencyWithdrawal @entity(immutable: true) {
+  id: Bytes!
+  _token: Bytes! # address
+  _receiver: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FlashStatusChanged @entity(immutable: true) {
+  id: Bytes!
+  oldStatus: Boolean! # bool
+  newStatus: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FlashWithdraw @entity(immutable: true) {
+  id: Bytes!
+  _user: Bytes! # address
+  _token: Bytes! # address
+  _amount: BigInt! # uint256
+  _fee: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Paused @entity(immutable: true) {
+  id: Bytes!
+  account: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RequestClaim @entity(immutable: true) {
+  id: Bytes!
+  _user: Bytes! # address
+  _token: Bytes! # address
+  _amount: BigInt! # uint256
+  internal__id: BigInt! # uint256
+  _isStakedTokenWithdraw: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleAdminChanged @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  previousAdminRole: Bytes! # bytes32
+  newAdminRole: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleGranted @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleRevoked @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Stake @entity(immutable: true) {
+  id: Bytes!
+  _user: Bytes! # address
+  _token: Bytes! # address
+  _amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type StakedDistributed @entity(immutable: true) {
+  id: Bytes!
+  token: Bytes! # address
+  recipient: Bytes! # address
+  amount: BigInt! # uint256
+  historicalRewardsEnabled: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type StakedTokenRegistered @entity(immutable: true) {
+  id: Bytes!
+  stakedToken: Bytes! # address
+  underlyingToken: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Unpaused @entity(immutable: true) {
+  id: Bytes!
+  account: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type UpdateCeffu @entity(immutable: true) {
+  id: Bytes!
+  _oldCeffu: Bytes! # address
+  _newCeffu: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type UpdatePenaltyRate @entity(immutable: true) {
+  id: Bytes!
+  oldRate: BigInt! # uint256
+  newRate: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type UpdateRewardRate @entity(immutable: true) {
+  id: Bytes!
+  _token: Bytes! # address
+  _oldRewardRate: BigInt! # uint256
+  _newRewardRate: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type UpdateStakeLimit @entity(immutable: true) {
+  id: Bytes!
+  _token: Bytes! # address
+  _oldMinAmount: BigInt! # uint256
+  _oldMaxAmount: BigInt! # uint256
+  _newMinAmount: BigInt! # uint256
+  _newMaxAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type UpdateVaultLedger @entity(immutable: true) {
+  id: Bytes!
+  oldVaultLedger: Bytes! # address
+  newVaultLedger: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type UpdateWaitingTime @entity(immutable: true) {
+  id: Bytes!
+  _oldWaitingTime: BigInt! # uint256
+  _newWaitingTIme: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

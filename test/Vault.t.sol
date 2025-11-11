@@ -2,13 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
+import "forge-std/console.sol";
 
-import { Vault } from "../contracts/Vault.sol";
-import { StakedToken } from "../contracts/StakedToken.sol";
-import { WithdrawVault } from "../contracts/WithdrawVault.sol";
-import { VaultLedger } from "../contracts/VaultLedger.sol";
-import { ClaimItem } from "../contracts/IVault.sol";
-import { MockToken } from "../contracts/mock/MockToken.sol";
+import {Vault} from "../contracts/Vault.sol";
+import {StakedToken} from "../contracts/StakedToken.sol";
+import {WithdrawVault} from "../contracts/WithdrawVault.sol";
+import {VaultLedger} from "../contracts/VaultLedger.sol";
+import {ClaimItem} from "../contracts/IVault.sol";
+import {MockToken} from "../contracts/mock/MockToken.sol";
 
 contract VaultBoosterTest is Test {
   uint256 private constant _BASE = 10_000;
@@ -105,7 +106,7 @@ contract VaultBoosterTest is Test {
     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), amount);
     uint256 stakedBalance = _stakedToken.balanceOf(_alice);
     uint256 assetsEquivalent = _vault.convertToAssets(stakedBalance, address(_underlying));
-    assertApproxEqAbs(assetsEquivalent, amount, 1);
+    assertEq(assetsEquivalent, amount);
     assertEq(_vault.getTVL(address(_underlying)), amount);
     assertEq(_underlying.balanceOf(_alice), aliceBalanceBefore - amount);
   }
@@ -126,7 +127,7 @@ contract VaultBoosterTest is Test {
     uint256 expectedReward = _expectedReward(amount, elapsed);
 
     assertEq(claimItem.principalAmount, amount);
-    assertApproxEqAbs(claimItem.rewardAmount, expectedReward, 1);
+    assertEq(claimItem.rewardAmount, expectedReward);
     assertEq(claimItem.totalAmount, claimItem.principalAmount + claimItem.rewardAmount);
     assertFalse(claimItem.isStakedTokenWithdraw);
     assertFalse(claimItem.isDone);
@@ -151,9 +152,8 @@ contract VaultBoosterTest is Test {
     assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
 
-    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + claimItem.totalAmount, 1);
-
-    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceInitialBalance + expectedReward, 1);
+    assertEq(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + claimItem.totalAmount);
+    assertEq(_underlying.balanceOf(_alice), aliceInitialBalance + expectedReward);
   }
 
   function testRequestClaimRewardsOnlyUsesRewardsFirst() public {
@@ -184,7 +184,7 @@ contract VaultBoosterTest is Test {
     assertGt(_stakedToken.balanceOf(_alice), 0);
 
     uint256 assetsEquivalent = _vault.convertToAssets(_stakedToken.balanceOf(_alice), address(_underlying));
-    assertApproxEqAbs(assetsEquivalent, amount + totalReward - withdrawAmount, 200);
+    assertEq(assetsEquivalent, amount + totalReward - withdrawAmount);
 
     _underlying.transfer(address(_withdrawVault), queueItem.totalAmount);
 
@@ -198,14 +198,14 @@ contract VaultBoosterTest is Test {
 
     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
     assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
-    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + queueItem.totalAmount, 2);
-    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceInitialBalance - amount + queueItem.totalAmount, 2);
+    assertEq(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + queueItem.totalAmount);
+    assertEq(_underlying.balanceOf(_alice), aliceInitialBalance - amount + queueItem.totalAmount);
     assertEq(_vault.getTVL(address(_underlying)), amount);
 
     uint256 remainingRewards = _vault.getClaimableRewards(_alice, address(_underlying));
     uint256 waitElapsed = (queueItem.claimTime + 1) - queueItem.requestTime;
     uint256 expectedRemainingRewards = totalReward - withdrawAmount + _expectedReward(amount, waitElapsed);
-    assertApproxEqAbs(remainingRewards, expectedRemainingRewards, 200);
+    assertEq(remainingRewards, expectedRemainingRewards);
   }
 
   function testCancelClaimRestoresPrincipalAndRewards() public {
@@ -240,13 +240,13 @@ contract VaultBoosterTest is Test {
     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), amount);
 
     uint256 claimableRewards = _vault.getClaimableRewards(_alice, address(_underlying));
-    assertApproxEqAbs(claimableRewards, queued.rewardAmount, 2);
+    assertEq(claimableRewards, queued.rewardAmount);
 
     uint256 stakedAssets = _vault.convertToAssets(_stakedToken.balanceOf(_alice), address(_underlying));
-    assertApproxEqAbs(stakedAssets, queued.principalAmount + queued.rewardAmount, 200);
+    assertEq(stakedAssets, queued.principalAmount + queued.rewardAmount);
   }
 
-  function testRequestSusduWithdrawRecordsEscrow() public {
+  function testRequestSusduWithdrawRecordsLedger() public {
     uint256 amount = 150 ether;
     _stakeForAlice(amount);
 
@@ -278,7 +278,7 @@ contract VaultBoosterTest is Test {
     uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
     assertEq(queueIds.length, 0);
 
-    assertApproxEqAbs(queueItem.rewardAmount, expectedReward, 2);
+    assertEq(queueItem.rewardAmount, expectedReward);
   }
 
   function testDisperseTokenClearsPendingWithdraw() public {
@@ -306,12 +306,7 @@ contract VaultBoosterTest is Test {
     vm.startPrank(_distributor);
     _underlying.approve(address(_vaultLedger), queueItem.totalAmount);
     uint256 dispersed = _vaultLedger.disperseToken(
-      _alice,
-      address(_underlying),
-      queueItem.totalAmount,
-      _distributor,
-      address(_underlying),
-      queueItem.totalAmount
+      _alice, address(_underlying), queueItem.totalAmount, _distributor, address(_underlying), queueItem.totalAmount
     );
     vm.stopPrank();
 
@@ -344,9 +339,7 @@ contract VaultBoosterTest is Test {
     assertEq(_stakedToken.balanceOf(_alice), 0);
     assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
-
-    assertApproxEqAbs(_underlying.balanceOf(_alice), aliceInitialBalance - amount + principalPayout + rewardPayout, 1);
-
-    assertApproxEqAbs(_underlying.balanceOf(address(_vault)), expectedFee, 1);
+    assertEq(_underlying.balanceOf(_alice), aliceInitialBalance - amount + principalPayout + rewardPayout);
+    assertEq(_underlying.balanceOf(address(_vault)), expectedFee);
   }
 }
