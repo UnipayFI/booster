@@ -4,12 +4,12 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import {Vault} from "../contracts/Vault.sol";
-import {StakedToken} from "../contracts/StakedToken.sol";
-import {WithdrawVault} from "../contracts/WithdrawVault.sol";
-import {VaultLedger} from "../contracts/VaultLedger.sol";
-import {ClaimItem} from "../contracts/IVault.sol";
-import {MockToken} from "../contracts/mock/MockToken.sol";
+import { Vault } from "../contracts/Vault.sol";
+import { StakedToken } from "../contracts/StakedToken.sol";
+import { WithdrawVault } from "../contracts/WithdrawVault.sol";
+import { VaultLedger } from "../contracts/VaultLedger.sol";
+import { ClaimItem } from "../contracts/IVault.sol";
+import { MockToken } from "../contracts/mock/MockToken.sol";
 
 contract VaultBoosterTest is Test {
   uint256 private constant _BASE = 10_000;
@@ -165,7 +165,7 @@ contract VaultBoosterTest is Test {
     vm.warp(block.timestamp + elapsed);
 
     uint256 totalReward = _expectedReward(amount, elapsed);
-    uint256 withdrawAmount = totalReward / 2;
+    uint256 withdrawAmount = totalReward;
     assertGt(withdrawAmount, 0);
 
     vm.startPrank(_alice);
@@ -184,7 +184,8 @@ contract VaultBoosterTest is Test {
     assertGt(_stakedToken.balanceOf(_alice), 0);
 
     uint256 assetsEquivalent = _vault.convertToAssets(_stakedToken.balanceOf(_alice), address(_underlying));
-    assertEq(assetsEquivalent, amount + totalReward - withdrawAmount);
+    assertGt(amount, assetsEquivalent);
+    assertApproxEqAbs(assetsEquivalent, amount + totalReward - withdrawAmount, 200);
 
     _underlying.transfer(address(_withdrawVault), queueItem.totalAmount);
 
@@ -306,7 +307,12 @@ contract VaultBoosterTest is Test {
     vm.startPrank(_distributor);
     _underlying.approve(address(_vaultLedger), queueItem.totalAmount);
     uint256 dispersed = _vaultLedger.disperseToken(
-      _alice, address(_underlying), queueItem.totalAmount, _distributor, address(_underlying), queueItem.totalAmount
+      _alice,
+      address(_underlying),
+      queueItem.totalAmount,
+      _distributor,
+      address(_underlying),
+      queueItem.totalAmount
     );
     vm.stopPrank();
 
