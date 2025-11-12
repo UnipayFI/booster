@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "forge-std/Script.sol";
 import "../contracts/Vault.sol";
 import "../contracts/WithdrawVault.sol";
-import "../contracts/VaultLedger.sol";
 import "../contracts/StakedToken.sol";
 
 struct DeployParams {
@@ -72,8 +71,6 @@ contract DeploytBSC is Script {
     staked[0] = address(stakedUSDT);
     staked[1] = address(stakedUSDC);
 
-    VaultLedger ledger = new VaultLedger(params.admin);
-
     IVault vault = new Vault(
       supportedTokens,
       staked,
@@ -85,8 +82,7 @@ contract DeploytBSC is Script {
       params.ceffu,
       7 days,
       payable(address(withdrawVault)),
-      params.distributor,
-      address(ledger)
+      params.distributor
     );
 
     withdrawVault.setVault(address(vault));
@@ -100,8 +96,6 @@ contract DeploytBSC is Script {
 
     stakedUSDT.setAdmin(params.admin);
     stakedUSDC.setAdmin(params.admin);
-
-    ledger.addAllowToken(params.susduToken);
 
     vm.stopBroadcast();
   }

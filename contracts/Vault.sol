@@ -13,7 +13,6 @@ import "./IVault.sol";
 import "./Utils.sol";
 
 import "./IStakedToken.sol";
-import "./IVaultLedger.sol";
 
 contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   using SafeERC20 for IERC20;
@@ -62,7 +61,6 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   uint256 private initialTime;
   IWithdrawVault private withdrawVault;
   address private distributorAddr;
-  IVaultLedger private vaultLedger;
 
   bool flashNotEnable = true;
   bool cancelNotEnable = true;
@@ -78,15 +76,12 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     address _ceffu,
     uint256 _waitingTime,
     address payable withdrawVaultAddress,
-    address _distributorAddr,
-    address _vaultLedgerAddress
+    address _distributorAddr
   ) {
     Utils.CheckIsZeroAddress(_ceffu);
     Utils.CheckIsZeroAddress(_admin);
     Utils.CheckIsZeroAddress(_bot);
     distributorAddr = _distributorAddr;
-    Utils.CheckIsZeroAddress(_vaultLedgerAddress);
-    require(_vaultLedgerAddress.code.length > 0, "vault ledger not contract");
 
     uint256 len = _tokens.length;
     require(Utils.MustGreaterThanZero(len));
@@ -139,8 +134,6 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     }
 
     withdrawVault = IWithdrawVault(withdrawVaultAddress);
-    vaultLedger = IVaultLedger(_vaultLedgerAddress);
-    emit UpdateVaultLedger(address(0), _vaultLedgerAddress);
 
     _pause();
   }
@@ -218,7 +211,7 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   function requestClaim_8135334(
     address _token,
     uint256 _amount,
-    bool _isStakedTokenWithdraw
+    bool _isSusduTokenWithdraw
   ) external onlySupportedToken(_token) whenNotPaused nonReentrant returns (uint256 _returnID) {
     _updateRewardState(msg.sender, _token);
     uint256 exchangeRate = _getExchangeRate(_token);
@@ -236,12 +229,12 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     ClaimItem storage queueItem = claimQueue[lastClaimQueueID];
 
     uint256 totalAmount = _amount;
-    if (_isStakedTokenWithdraw) {
+    if (_isSusduTokenWithdraw) {
       queueItem.token = _token;
       queueItem.user = msg.sender;
       queueItem.requestTime = block.timestamp;
       queueItem.claimTime = block.timestamp;
-      queueItem.isStakedTokenWithdraw = _isStakedTokenWithdraw;
+      queueItem.isSusduTokenWithdraw = _isSusduTokenWithdraw;
       totalAmount = requestStakedTokenWithdraw(_token, _amount, exchangeRate, assetsInfo, queueItem);
     } else {
       // Withdraw from reward first; if insufficient, continue withdrawing from principal
@@ -267,14 +260,14 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
       queueItem.user = msg.sender;
       queueItem.totalAmount = totalAmount;
       queueItem.requestTime = block.timestamp;
-      queueItem.isStakedTokenWithdraw = _isStakedTokenWithdraw;
+      queueItem.isSusduTokenWithdraw = _isSusduTokenWithdraw;
       queueItem.claimTime = Utils.Add(block.timestamp, WAITING_TIME);
     }
     unchecked {
       _returnID = lastClaimQueueID;
       ++lastClaimQueueID;
     }
-    emit RequestClaim(msg.sender, _token, totalAmount, _returnID, _isStakedTokenWithdraw);
+    emit RequestClaim(msg.sender, _token, totalAmount, _returnID, _isSusduTokenWithdraw);
   }
 
   function requestStakedTokenWithdraw(
@@ -308,7 +301,6 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
 
     if (totalAmount > 0) {
       withdrawVault.transfer(_token, ceffu, totalAmount);
-      vaultLedger.recordWithdraw(msg.sender, _token, totalAmount);
       emit CeffuReceive(_token, ceffu, totalAmount);
     }
 
@@ -384,7 +376,7 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     assetsInfo.claimHistory.push(
       ClaimItem({
         isDone: true,
-        isStakedTokenWithdraw: claimItem.isStakedTokenWithdraw,
+        isSusduTokenWithdraw: claimItem.isSusduTokenWithdraw,
         token: token,
         user: msg.sender,
         totalAmount: claimItem.totalAmount,
@@ -461,7 +453,7 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
       ClaimItem({
         isDone: true,
         // flashWithdraw is only support usdt withdraw.
-        isStakedTokenWithdraw: false,
+        isSusduTokenWithdraw: false,
         token: _token,
         user: msg.sender,
         totalAmount: totalAmount,
@@ -728,17 +720,6 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
     distributorAddr = newDistributorAddr;
   }
 
-  function setVaultLedger(address newVaultLedger) external onlyRole(DEFAULT_ADMIN_ROLE) {
-    Utils.CheckIsZeroAddress(newVaultLedger);
-    require(newVaultLedger.code.length > 0, "vault ledger not contract");
-    address current = address(vaultLedger);
-    require(newVaultLedger != current, "no change");
-
-    vaultLedger = IVaultLedger(newVaultLedger);
-
-    emit UpdateVaultLedger(current, newVaultLedger);
-  }
-
   function setPenaltyRate(uint256 newRate) external onlyRole(DEFAULT_ADMIN_ROLE) {
     require(newRate <= BASE && newRate != penaltyRate, "Invalid");
 
@@ -943,10 +924,6 @@ contract Vault is IVault, Pausable, AccessControl, ReentrancyGuard {
   function getContractBalance(address _token) public view returns (uint256) {
     Utils.CheckIsZeroAddress(_token);
     return IERC20(_token).balanceOf(address(this));
-  }
-
-  function getVaultLedgerAddress() external view returns (address) {
-    return address(vaultLedger);
   }
 
   function getStakeHistory(

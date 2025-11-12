@@ -8,10 +8,9 @@
 
 | 合约 | 地址 | 说明 |
 |------|------|------|
-| BoosterVault | [0xcE56FA9e9692Df22984A91628e1bD9206e487535](https://testnet.bscscan.com/address/0xcE56FA9e9692Df22984A91628e1bD9206e487535) | 主仓库合约，处理质押/赎回逻辑 |
-| BoosterVaultLedger | [0x7A8ff83c0691A40Ca3cc0a6494C607cE72a1323a](https://testnet.bscscan.com/address/0x7A8ff83c0691A40Ca3cc0a6494C607cE72a1323a) | 奖励托管合约，记录并发放奖励 |
-| BoosterWithdrawVault | [0xFDa869a50CbF285344c658af39e3b2FeE0a840aF](https://testnet.bscscan.com/address/0xFDa869a50CbF285344c658af39e3b2FeE0a840aF) | 提现缓冲仓，负责实际打款 |
-| mBnUSDu | [0x4bf62B89DF3b3D1C3A9352aC1aC86C1428312eE6](https://testnet.bscscan.com/address/0x4bf62B89DF3b3D1C3A9352aC1aC86C1428312eE6) | bnStaked Token |
+| BoosterVault | [0xEEC2630f52a7D6436542699cb5A962De0c364C71](https://testnet.bscscan.com/address/0xEEC2630f52a7D6436542699cb5A962De0c364C71) | 主仓库合约，处理质押/赎回逻辑 |
+| BoosterWithdrawVault | [0x0a21dbd4c36c8f07Eed8F76a5b8d21a0721a427F](https://testnet.bscscan.com/address/0x0a21dbd4c36c8f07Eed8F76a5b8d21a0721a427F) | 提现缓冲仓，负责实际打款 |
+| mBnUSDu | [0x18eC822Bf73F58E1aB522D122027592690fFa1E2](https://testnet.bscscan.com/address/0x18eC822Bf73F58E1aB522D122027592690fFa1E2) | bnStaked Token |
 | sUSDu | [0xfaf2A0372742A305817f5a634cA8E1C75a3Cf3E1](https://testnet.bscscan.com/address/0xfaf2A0372742A305817f5a634cA8E1C75a3Cf3E1) | sUSDu Token |
 | mUSDT | [0x42e3D7f4cfE3B94BCeF3EBaEa832326AcB40C142](https://testnet.bscscan.com/address/0x42e3D7f4cfE3B94BCeF3EBaEa832326AcB40C142) | mUSDT Token |
 

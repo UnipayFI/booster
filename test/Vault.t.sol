@@ -7,7 +7,6 @@ import "forge-std/console.sol";
 import { Vault } from "../contracts/Vault.sol";
 import { StakedToken } from "../contracts/StakedToken.sol";
 import { WithdrawVault } from "../contracts/WithdrawVault.sol";
-import { VaultLedger } from "../contracts/VaultLedger.sol";
 import { ClaimItem } from "../contracts/IVault.sol";
 import { MockToken } from "../contracts/mock/MockToken.sol";
 
@@ -19,7 +18,6 @@ contract VaultBoosterTest is Test {
   Vault internal _vault;
   StakedToken internal _stakedToken;
   WithdrawVault internal _withdrawVault;
-  VaultLedger internal _vaultLedger;
   MockToken internal _underlying;
 
   address internal _admin;
@@ -57,7 +55,6 @@ contract VaultBoosterTest is Test {
     maxStakeAmounts[0] = 1_000_000 ether;
 
     _withdrawVault = new WithdrawVault(tokens, _admin, _bot, _ceffu);
-    _vaultLedger = new VaultLedger(_admin);
 
     _vault = new Vault(
       tokens,
@@ -70,15 +67,11 @@ contract VaultBoosterTest is Test {
       _ceffu,
       _waitingTime,
       payable(address(_withdrawVault)),
-      _distributor,
-      address(_vaultLedger)
+      _distributor
     );
 
     _stakedToken.setMinter(address(_vault), address(_vault));
     _withdrawVault.setVault(address(_vault));
-    _vaultLedger.setVault(address(_vault), true);
-    _vaultLedger.setDistributor(_distributor, true);
-    _vaultLedger.addAllowToken(address(_underlying));
 
     _vault.unpause();
     _vault.setCancelEnable(false);
@@ -129,7 +122,7 @@ contract VaultBoosterTest is Test {
     assertEq(claimItem.principalAmount, amount);
     assertEq(claimItem.rewardAmount, expectedReward);
     assertEq(claimItem.totalAmount, claimItem.principalAmount + claimItem.rewardAmount);
-    assertFalse(claimItem.isStakedTokenWithdraw);
+    assertFalse(claimItem.isSusduTokenWithdraw);
     assertFalse(claimItem.isDone);
 
     uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
@@ -149,7 +142,6 @@ contract VaultBoosterTest is Test {
     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
     assertEq(_stakedToken.balanceOf(_alice), 0);
     assertEq(_vault.getTVL(address(_underlying)), 0);
-    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
 
     assertEq(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + claimItem.totalAmount);
@@ -177,7 +169,7 @@ contract VaultBoosterTest is Test {
     assertEq(queueItem.rewardAmount, withdrawAmount);
     assertEq(queueItem.principalAmount, 0);
     assertEq(queueItem.totalAmount, withdrawAmount);
-    assertFalse(queueItem.isStakedTokenWithdraw);
+    assertFalse(queueItem.isSusduTokenWithdraw);
     assertFalse(queueItem.isDone);
 
     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), amount);
@@ -198,7 +190,6 @@ contract VaultBoosterTest is Test {
     vm.stopPrank();
 
     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
-    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
     assertEq(_underlying.balanceOf(_alice), aliceBalanceBeforeClaim + queueItem.totalAmount);
     assertEq(_underlying.balanceOf(_alice), aliceInitialBalance - amount + queueItem.totalAmount);
     assertEq(_vault.getTVL(address(_underlying)), amount);
@@ -247,7 +238,7 @@ contract VaultBoosterTest is Test {
     assertEq(stakedAssets, queued.principalAmount + queued.rewardAmount);
   }
 
-  function testRequestSusduWithdrawRecordsLedger() public {
+  function testRequestSusduWithdrawRecords() public {
     uint256 amount = 150 ether;
     _stakeForAlice(amount);
 
@@ -266,59 +257,19 @@ contract VaultBoosterTest is Test {
     ClaimItem memory queueItem = _vault.getClaimQueueInfo(queueId);
 
     assertTrue(queueItem.isDone);
-    assertTrue(queueItem.isStakedTokenWithdraw);
+    assertTrue(queueItem.isSusduTokenWithdraw);
     assertEq(queueItem.totalAmount, queueItem.principalAmount + queueItem.rewardAmount);
     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
     assertEq(_stakedToken.balanceOf(_alice), 0);
     assertEq(_vault.getTVL(address(_underlying)), 0);
 
-    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), queueItem.totalAmount);
     assertEq(_underlying.balanceOf(_ceffu), ceffuBalanceBefore + queueItem.totalAmount);
 
     uint256[] memory queueIds = _vault.getClaimQueueIDs(_alice, address(_underlying));
     assertEq(queueIds.length, 0);
 
     assertEq(queueItem.rewardAmount, expectedReward);
-  }
-
-  function testDisperseTokenClearsPendingWithdraw() public {
-    uint256 amount = 250 ether;
-    _stakeForAlice(amount);
-
-    uint256 elapsed = 45 days;
-    vm.warp(block.timestamp + elapsed);
-
-    uint256 expectedReward = _expectedReward(amount, elapsed);
-    _underlying.transfer(address(_withdrawVault), amount + expectedReward + 1 ether);
-
-    vm.startPrank(_alice);
-    uint256 queueId = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, true);
-    vm.stopPrank();
-
-    ClaimItem memory queueItem = _vault.getClaimQueueInfo(queueId);
-    uint256 pendingAmount = _vaultLedger.getAvailableAmount(_alice, address(_underlying));
-    assertEq(pendingAmount, queueItem.totalAmount);
-
-    _underlying.transfer(_distributor, queueItem.totalAmount);
-
-    uint256 aliceBalanceBefore = _underlying.balanceOf(_alice);
-
-    vm.startPrank(_distributor);
-    _underlying.approve(address(_vaultLedger), queueItem.totalAmount);
-    uint256 dispersed = _vaultLedger.disperseToken(
-      _alice,
-      address(_underlying),
-      queueItem.totalAmount,
-      _distributor,
-      address(_underlying),
-      queueItem.totalAmount
-    );
-    vm.stopPrank();
-
-    assertEq(dispersed, queueItem.totalAmount);
-    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
-    assertEq(_underlying.balanceOf(_alice), aliceBalanceBefore + queueItem.totalAmount);
   }
 
   function testFlashWithdrawAppliesPenalty() public {
@@ -343,7 +294,6 @@ contract VaultBoosterTest is Test {
 
     assertEq(_vault.getStakedAmount(_alice, address(_underlying)), 0);
     assertEq(_stakedToken.balanceOf(_alice), 0);
-    assertEq(_vaultLedger.getAvailableAmount(_alice, address(_underlying)), 0);
     assertEq(_vault.getClaimHistoryLength(_alice, address(_underlying)), 1);
     assertEq(_underlying.balanceOf(_alice), aliceInitialBalance - amount + principalPayout + rewardPayout);
     assertEq(_underlying.balanceOf(address(_vault)), expectedFee);

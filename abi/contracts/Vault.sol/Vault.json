@@ -55,11 +55,6 @@
         "internalType": "address",
         "name": "_distributorAddr",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_vaultLedgerAddress",
-        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -360,7 +355,7 @@
       {
         "indexed": false,
         "internalType": "bool",
-        "name": "_isStakedTokenWithdraw",
+        "name": "_isSusduTokenWithdraw",
         "type": "bool"
       }
     ],
@@ -634,25 +629,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "oldVaultLedger",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newVaultLedger",
-        "type": "address"
-      }
-    ],
-    "name": "UpdateVaultLedger",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": false,
         "internalType": "uint256",
         "name": "_oldWaitingTime",
@@ -904,7 +880,7 @@
           },
           {
             "internalType": "bool",
-            "name": "isStakedTokenWithdraw",
+            "name": "isSusduTokenWithdraw",
             "type": "bool"
           },
           {
@@ -1018,7 +994,7 @@
           },
           {
             "internalType": "bool",
-            "name": "isStakedTokenWithdraw",
+            "name": "isSusduTokenWithdraw",
             "type": "bool"
           },
           {
@@ -1371,19 +1347,6 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "getVaultLedgerAddress",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [
       {
         "internalType": "bytes32",
@@ -1528,7 +1491,7 @@
       },
       {
         "internalType": "bool",
-        "name": "_isStakedTokenWithdraw",
+        "name": "_isSusduTokenWithdraw",
         "type": "bool"
       }
     ],
@@ -1663,19 +1626,6 @@
       }
     ],
     "name": "setStakeLimit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newVaultLedger",
-        "type": "address"
-      }
-    ],
-    "name": "setVaultLedger",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

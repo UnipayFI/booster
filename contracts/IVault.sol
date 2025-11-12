@@ -20,7 +20,7 @@ struct StakeItem {
 
 struct ClaimItem {
   bool isDone;
-  bool isStakedTokenWithdraw;
+  bool isSusduTokenWithdraw;
   address token;
   address user;
   uint256 totalAmount;
@@ -41,7 +41,7 @@ interface IVault {
     address indexed _token,
     uint256 indexed _amount,
     uint256 indexed _id,
-    bool _isStakedTokenWithdraw
+    bool _isSusduTokenWithdraw
   );
   event ClaimAssets(address indexed _user, address indexed _token, uint256 indexed _amount, uint256 _id);
   event UpdateRewardRate(address _token, uint256 _oldRewardRate, uint256 _newRewardRate);
@@ -67,7 +67,6 @@ interface IVault {
   event FlashWithdraw(address indexed _user, address indexed _token, uint256 indexed _amount, uint256 _fee);
   event UpdatePenaltyRate(uint256 indexed oldRate, uint256 indexed newRate);
   event CancelClaim(address indexed user, address indexed _token, uint256 indexed _amount, uint256 _id);
-  event UpdateVaultLedger(address indexed oldVaultLedger, address indexed newVaultLedger);
   event FlashStatusChanged(bool indexed oldStatus, bool indexed newStatus);
   event CancelStatusChanged(bool indexed oldStatus, bool indexed newStatus);
 
@@ -77,11 +76,7 @@ interface IVault {
 
   function stake_66380860(address _token, uint256 _stakedAmount) external;
 
-  function requestClaim_8135334(
-    address _token,
-    uint256 _amount,
-    bool _isStakedTokenWithdraw
-  ) external returns (uint256);
+  function requestClaim_8135334(address _token, uint256 _amount, bool _isSusduTokenWithdraw) external returns (uint256);
 
   function cancelClaim(uint256 _queueId, address _token) external;
 
@@ -112,8 +107,6 @@ interface IVault {
   function setPenaltyRate(uint256 _newRate) external;
 
   function setDistributorAddr(address newDistributorAddr) external;
-
-  function setVaultLedger(address newVaultLedger) external;
 
   function setStakeLimit(address _token, uint256 _minAmount, uint256 _maxAmount) external;
 
@@ -168,6 +161,4 @@ interface IVault {
   function getStakedBalance(address _user, address _token) external view returns (uint256);
 
   function lastClaimQueueID() external view returns (uint256);
-
-  function getVaultLedgerAddress() external view returns (address);
 }
