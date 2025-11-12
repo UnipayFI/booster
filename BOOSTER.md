@@ -39,3 +39,17 @@
 - 返回当前累积但尚未领取的奖励金额
 - `getTotalRewards(address user, address token) → uint256`
 - 返回历史已领取奖励与当前累积奖励之和，便于展示收益总额
+- `getStakeHistory(address user, address token, uint256 index) → StakeItem`
+- 按索引查询用户的质押记录，包含金额、时间戳等信息
+- `getClaimHistory(address user, address token, uint256 index) → ClaimItem`
+- 按索引查询用户的赎回记录，了解每笔赎回的本金和奖励
+- `getStakeHistoryLength(address user, address token) → uint256`
+- 查询用户质押记录的条数，搭配 `getStakeHistory` 遍历
+- `getClaimHistoryLength(address user, address token) → uint256`
+- 查询用户赎回记录的条数，搭配 `getClaimHistory` 遍历
+- `getClaimQueueIDs(address user, address token) → uint256[]`
+- 返回用户当前仍在排队的赎回请求 ID 列表，便于前端轮询
+- `getClaimQueueInfo(uint256 queueId) → ClaimItem`
+- 通过队列 ID 查看具体的赎回请求状态（请求时间、可领取时间等）
+- `getTVL(address token) → uint256`
+- 返回指定底层资产在 Vault 中的当前总锁仓量
