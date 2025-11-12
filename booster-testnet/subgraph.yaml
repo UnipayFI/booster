@@ -8,7 +8,7 @@ dataSources:
     name: BoosterVault
     network: chapel
     source:
-      address: "0xcE56FA9e9692Df22984A91628e1bD9206e487535"
+      address: "0xEEC2630f52a7D6436542699cb5A962De0c364C71"
       abi: BoosterVault
       startBlock: 71539411
     mapping:
@@ -37,7 +37,6 @@ dataSources:
         - UpdatePenaltyRate
         - UpdateRewardRate
         - UpdateStakeLimit
-        - UpdateVaultLedger
         - UpdateWaitingTime
       abis:
         - name: BoosterVault
@@ -85,8 +84,6 @@ dataSources:
           handler: handleUpdateRewardRate
         - event: UpdateStakeLimit(indexed address,uint256,uint256,uint256,uint256)
           handler: handleUpdateStakeLimit
-        - event: UpdateVaultLedger(indexed address,indexed address)
-          handler: handleUpdateVaultLedger
         - event: UpdateWaitingTime(uint256,uint256)
           handler: handleUpdateWaitingTime
       file: ./src/booster-vault.ts

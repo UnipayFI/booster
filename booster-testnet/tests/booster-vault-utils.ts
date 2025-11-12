@@ -22,7 +22,6 @@ import {
   UpdatePenaltyRate,
   UpdateRewardRate,
   UpdateStakeLimit,
-  UpdateVaultLedger,
   UpdateWaitingTime
 } from "../generated/BoosterVault/BoosterVault"
 
@@ -237,7 +236,7 @@ export function createRequestClaimEvent(
   _token: Address,
   _amount: BigInt,
   _id: BigInt,
-  _isStakedTokenWithdraw: boolean
+  _isSusduTokenWithdraw: boolean
 ): RequestClaim {
   let requestClaimEvent = changetype<RequestClaim>(newMockEvent())
 
@@ -260,8 +259,8 @@ export function createRequestClaimEvent(
   )
   requestClaimEvent.parameters.push(
     new ethereum.EventParam(
-      "_isStakedTokenWithdraw",
-      ethereum.Value.fromBoolean(_isStakedTokenWithdraw)
+      "_isSusduTokenWithdraw",
+      ethereum.Value.fromBoolean(_isSusduTokenWithdraw)
     )
   )
 
@@ -541,30 +540,6 @@ export function createUpdateStakeLimitEvent(
   )
 
   return updateStakeLimitEvent
-}
-
-export function createUpdateVaultLedgerEvent(
-  oldVaultLedger: Address,
-  newVaultLedger: Address
-): UpdateVaultLedger {
-  let updateVaultLedgerEvent = changetype<UpdateVaultLedger>(newMockEvent())
-
-  updateVaultLedgerEvent.parameters = new Array()
-
-  updateVaultLedgerEvent.parameters.push(
-    new ethereum.EventParam(
-      "oldVaultLedger",
-      ethereum.Value.fromAddress(oldVaultLedger)
-    )
-  )
-  updateVaultLedgerEvent.parameters.push(
-    new ethereum.EventParam(
-      "newVaultLedger",
-      ethereum.Value.fromAddress(newVaultLedger)
-    )
-  )
-
-  return updateVaultLedgerEvent
 }
 
 export function createUpdateWaitingTimeEvent(

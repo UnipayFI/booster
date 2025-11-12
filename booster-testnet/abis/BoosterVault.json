@@ -1,7 +1,11 @@
 [
   {
     "inputs": [
-      { "internalType": "address[]", "name": "_tokens", "type": "address[]" },
+      {
+        "internalType": "address[]",
+        "name": "_tokens",
+        "type": "address[]"
+      },
       {
         "internalType": "address[]",
         "name": "_stakedTokens",
@@ -22,10 +26,26 @@
         "name": "_maxStakeAmount",
         "type": "uint256[]"
       },
-      { "internalType": "address", "name": "_admin", "type": "address" },
-      { "internalType": "address", "name": "_bot", "type": "address" },
-      { "internalType": "address", "name": "_ceffu", "type": "address" },
-      { "internalType": "uint256", "name": "_waitingTime", "type": "uint256" },
+      {
+        "internalType": "address",
+        "name": "_admin",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_bot",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_ceffu",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_waitingTime",
+        "type": "uint256"
+      },
       {
         "internalType": "address payable",
         "name": "withdrawVaultAddress",
@@ -35,36 +55,63 @@
         "internalType": "address",
         "name": "_distributorAddr",
         "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_vaultLedgerAddress",
-        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
-  { "inputs": [], "name": "AccessControlBadConfirmation", "type": "error" },
+  {
+    "inputs": [],
+    "name": "AccessControlBadConfirmation",
+    "type": "error"
+  },
   {
     "inputs": [
-      { "internalType": "address", "name": "account", "type": "address" },
-      { "internalType": "bytes32", "name": "neededRole", "type": "bytes32" }
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "neededRole",
+        "type": "bytes32"
+      }
     ],
     "name": "AccessControlUnauthorizedAccount",
     "type": "error"
   },
-  { "inputs": [], "name": "EnforcedPause", "type": "error" },
-  { "inputs": [], "name": "ExpectedPause", "type": "error" },
-  { "inputs": [], "name": "ReentrancyGuardReentrantCall", "type": "error" },
+  {
+    "inputs": [],
+    "name": "EnforcedPause",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ExpectedPause",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ReentrancyGuardReentrantCall",
+    "type": "error"
+  },
   {
     "inputs": [
-      { "internalType": "address", "name": "token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      }
     ],
     "name": "SafeERC20FailedOperation",
     "type": "error"
   },
-  { "inputs": [], "name": "ZeroAddress", "type": "error" },
+  {
+    "inputs": [],
+    "name": "ZeroAddress",
+    "type": "error"
+  },
   {
     "anonymous": false,
     "inputs": [
@@ -308,7 +355,7 @@
       {
         "indexed": false,
         "internalType": "bool",
-        "name": "_isStakedTokenWithdraw",
+        "name": "_isSusduTokenWithdraw",
         "type": "bool"
       }
     ],
@@ -582,25 +629,6 @@
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "oldVaultLedger",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "newVaultLedger",
-        "type": "address"
-      }
-    ],
-    "name": "UpdateVaultLedger",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
         "indexed": false,
         "internalType": "uint256",
         "name": "_oldWaitingTime",
@@ -619,24 +647,56 @@
   {
     "inputs": [],
     "name": "DEFAULT_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "WAITING_TIME",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_minAmount", "type": "uint256" },
-      { "internalType": "uint256", "name": "_maxAmount", "type": "uint256" },
-      { "internalType": "address", "name": "_stakedToken", "type": "address" },
-      { "internalType": "uint256", "name": "_newRewardRate", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_stakedToken",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newRewardRate",
+        "type": "uint256"
+      }
     ],
     "name": "addSupportedToken",
     "outputs": [],
@@ -645,8 +705,16 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_queueId", "type": "uint256" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "_queueId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "cancelClaim",
     "outputs": [],
@@ -655,8 +723,16 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_queueID", "type": "uint256" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "_queueID",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "claim_41202704",
     "outputs": [],
@@ -665,33 +741,69 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "shares", "type": "uint256" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "convertToAssets",
     "outputs": [
-      { "internalType": "uint256", "name": "tokenAmount", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "tokenAmount",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "tokenAmount", "type": "uint256" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "uint256",
+        "name": "tokenAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "convertToShares",
     "outputs": [
-      { "internalType": "uint256", "name": "shares", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "shares",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "token", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
       {
         "internalType": "bool",
         "name": "enableHistoricalRewards",
@@ -705,8 +817,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "address", "name": "_receiver", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_receiver",
+        "type": "address"
+      }
     ],
     "name": "emergencyWithdraw",
     "outputs": [],
@@ -715,8 +835,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_amount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
     "name": "flashWithdrawWithPenalty",
     "outputs": [],
@@ -725,22 +853,46 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_index", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
     ],
     "name": "getClaimHistory",
     "outputs": [
       {
         "components": [
-          { "internalType": "bool", "name": "isDone", "type": "bool" },
           {
             "internalType": "bool",
-            "name": "isStakedTokenWithdraw",
+            "name": "isDone",
             "type": "bool"
           },
-          { "internalType": "address", "name": "token", "type": "address" },
-          { "internalType": "address", "name": "user", "type": "address" },
+          {
+            "internalType": "bool",
+            "name": "isSusduTokenWithdraw",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
           {
             "internalType": "uint256",
             "name": "totalAmount",
@@ -761,7 +913,11 @@
             "name": "requestTime",
             "type": "uint256"
           },
-          { "internalType": "uint256", "name": "claimTime", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "claimTime",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct ClaimItem",
         "name": "",
@@ -773,42 +929,84 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getClaimHistoryLength",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getClaimQueueIDs",
     "outputs": [
-      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+      {
+        "internalType": "uint256[]",
+        "name": "",
+        "type": "uint256[]"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_index", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
     ],
     "name": "getClaimQueueInfo",
     "outputs": [
       {
         "components": [
-          { "internalType": "bool", "name": "isDone", "type": "bool" },
           {
             "internalType": "bool",
-            "name": "isStakedTokenWithdraw",
+            "name": "isDone",
             "type": "bool"
           },
-          { "internalType": "address", "name": "token", "type": "address" },
-          { "internalType": "address", "name": "user", "type": "address" },
+          {
+            "internalType": "bool",
+            "name": "isSusduTokenWithdraw",
+            "type": "bool"
+          },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
           {
             "internalType": "uint256",
             "name": "totalAmount",
@@ -829,7 +1027,11 @@
             "name": "requestTime",
             "type": "uint256"
           },
-          { "internalType": "uint256", "name": "claimTime", "type": "uint256" }
+          {
+            "internalType": "uint256",
+            "name": "claimTime",
+            "type": "uint256"
+          }
         ],
         "internalType": "struct ClaimItem",
         "name": "",
@@ -841,78 +1043,180 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getClaimableAssets",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getClaimableRewards",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_targetTime", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_targetTime",
+        "type": "uint256"
+      }
     ],
     "name": "getClaimableRewardsWithTargetTime",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getContractBalance",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getCurrentRewardRate",
     "outputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" },
-      { "internalType": "uint256", "name": "", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" }
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      }
     ],
     "name": "getRoleAdmin",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_index", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
     ],
     "name": "getStakeHistory",
     "outputs": [
       {
         "components": [
-          { "internalType": "address", "name": "token", "type": "address" },
-          { "internalType": "address", "name": "user", "type": "address" },
-          { "internalType": "uint256", "name": "amount", "type": "uint256" },
+          {
+            "internalType": "address",
+            "name": "token",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          },
           {
             "internalType": "uint256",
             "name": "stakeTimestamp",
@@ -929,64 +1233,131 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getStakeHistoryLength",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getStakedAmount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getStakedBalance",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getTVL",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_user", "type": "address" },
-      { "internalType": "address", "name": "_token", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      }
     ],
     "name": "getTotalRewards",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getVaultLedgerAddress",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
     "name": "grantRole",
     "outputs": [],
@@ -995,32 +1366,76 @@
   },
   {
     "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
     "name": "hasRole",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "lastClaimQueueID",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "maxStakeAmount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "minStakeAmount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -1034,13 +1449,23 @@
   {
     "inputs": [],
     "name": "paused",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
       {
         "internalType": "address",
         "name": "callerConfirmation",
@@ -1054,25 +1479,45 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_amount", "type": "uint256" },
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      },
       {
         "internalType": "bool",
-        "name": "_isStakedTokenWithdraw",
+        "name": "_isSusduTokenWithdraw",
         "type": "bool"
       }
     ],
     "name": "requestClaim_8135334",
     "outputs": [
-      { "internalType": "uint256", "name": "_returnID", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_returnID",
+        "type": "uint256"
+      }
     ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      }
     ],
     "name": "revokeRole",
     "outputs": [],
@@ -1080,7 +1525,13 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "bool", "name": "_enable", "type": "bool" }],
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
     "name": "setCancelEnable",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1088,7 +1539,11 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_newCeffu", "type": "address" }
+      {
+        "internalType": "address",
+        "name": "_newCeffu",
+        "type": "address"
+      }
     ],
     "name": "setCeffu",
     "outputs": [],
@@ -1109,7 +1564,13 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "bool", "name": "_enable", "type": "bool" }],
+    "inputs": [
+      {
+        "internalType": "bool",
+        "name": "_enable",
+        "type": "bool"
+      }
+    ],
     "name": "setFlashEnable",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1117,7 +1578,11 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "newRate", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "newRate",
+        "type": "uint256"
+      }
     ],
     "name": "setPenaltyRate",
     "outputs": [],
@@ -1126,8 +1591,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_newRewardRate", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_newRewardRate",
+        "type": "uint256"
+      }
     ],
     "name": "setRewardRate",
     "outputs": [],
@@ -1136,20 +1609,23 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_minAmount", "type": "uint256" },
-      { "internalType": "uint256", "name": "_maxAmount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_minAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_maxAmount",
+        "type": "uint256"
+      }
     ],
     "name": "setStakeLimit",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "newVaultLedger", "type": "address" }
-    ],
-    "name": "setVaultLedger",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1169,8 +1645,16 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_stakedAmount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_stakedAmount",
+        "type": "uint256"
+      }
     ],
     "name": "stake_66380860",
     "outputs": [],
@@ -1178,67 +1662,165 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "stakedTokenToSupportedToken",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "supportedTokenToStakedToken",
     "outputs": [
-      { "internalType": "contract IStakedToken", "name": "", "type": "address" }
+      {
+        "internalType": "contract IStakedToken",
+        "name": "",
+        "type": "address"
+      }
     ],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
     "name": "supportedTokens",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
     ],
     "name": "supportsInterface",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "totalRewardsAmountByToken",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "totalStakeAmountByToken",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "token", "type": "address" },
-      { "internalType": "address", "name": "from", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "totalRewardsAmountByToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "totalStakeAmountByToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
     ],
     "name": "transferOrTransferFrom",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "_token", "type": "address" },
-      { "internalType": "uint256", "name": "_amount", "type": "uint256" }
+      {
+        "internalType": "address",
+        "name": "_token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_amount",
+        "type": "uint256"
+      }
     ],
     "name": "transferToCeffu",
     "outputs": [],
@@ -1252,5 +1834,8 @@
     "stateMutability": "nonpayable",
     "type": "function"
   },
-  { "stateMutability": "payable", "type": "receive" }
+  {
+    "stateMutability": "payable",
+    "type": "receive"
+  }
 ]

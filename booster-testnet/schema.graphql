@@ -92,7 +92,7 @@ type RequestClaim @entity(immutable: true) {
   _token: Bytes! # address
   _amount: BigInt! # uint256
   internal__id: BigInt! # uint256
-  _isStakedTokenWithdraw: Boolean! # bool
+  _isSusduTokenWithdraw: Boolean! # bool
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -201,15 +201,6 @@ type UpdateStakeLimit @entity(immutable: true) {
   _oldMaxAmount: BigInt! # uint256
   _newMinAmount: BigInt! # uint256
   _newMaxAmount: BigInt! # uint256
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type UpdateVaultLedger @entity(immutable: true) {
-  id: Bytes!
-  oldVaultLedger: Bytes! # address
-  newVaultLedger: Bytes! # address
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

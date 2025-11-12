@@ -20,7 +20,6 @@ import {
   UpdatePenaltyRate as UpdatePenaltyRateEvent,
   UpdateRewardRate as UpdateRewardRateEvent,
   UpdateStakeLimit as UpdateStakeLimitEvent,
-  UpdateVaultLedger as UpdateVaultLedgerEvent,
   UpdateWaitingTime as UpdateWaitingTimeEvent
 } from "../generated/BoosterVault/BoosterVault"
 import {
@@ -45,7 +44,6 @@ import {
   UpdatePenaltyRate,
   UpdateRewardRate,
   UpdateStakeLimit,
-  UpdateVaultLedger,
   UpdateWaitingTime
 } from "../generated/schema"
 
@@ -194,7 +192,7 @@ export function handleRequestClaim(event: RequestClaimEvent): void {
   entity._token = event.params._token
   entity._amount = event.params._amount
   entity.internal__id = event.params._id
-  entity._isStakedTokenWithdraw = event.params._isStakedTokenWithdraw
+  entity._isSusduTokenWithdraw = event.params._isSusduTokenWithdraw
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
@@ -360,20 +358,6 @@ export function handleUpdateStakeLimit(event: UpdateStakeLimitEvent): void {
   entity._oldMaxAmount = event.params._oldMaxAmount
   entity._newMinAmount = event.params._newMinAmount
   entity._newMaxAmount = event.params._newMaxAmount
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
-
-export function handleUpdateVaultLedger(event: UpdateVaultLedgerEvent): void {
-  let entity = new UpdateVaultLedger(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.oldVaultLedger = event.params.oldVaultLedger
-  entity.newVaultLedger = event.params.newVaultLedger
 
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
