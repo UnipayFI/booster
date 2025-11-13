@@ -1,15 +1,9 @@
 import { ZeroAddress } from "ethers";
 import { DeployFunction } from "hardhat-deploy/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { WithdrawVault, Vault } from "../typechain-types";
+import { WithdrawVault, Vault, StakedToken } from "../typechain-types";
 
 import { boostConfig, BoostMiscConfig, BoostTokenConfig } from "./config";
-
-type PreparedTokenConfig = BoostTokenConfig & {
-  stakedDeploymentName: string;
-  stakedAddress: string;
-  stakedAdmin: string;
-};
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployments, getNamedAccounts, ethers } = hre;
@@ -36,12 +30,32 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const withdrawVault = (await ethers.getContract(withdrawVaultDeploymentName)) as WithdrawVault;
   const withdrawVaultAddress = await withdrawVault.getAddress();
   const vaultDeploymentName = `BoosterVault_${hre.network.name}`;
-  const deployedResult = await deploy(vaultDeploymentName, {
+
+  /// 处理 stakedToken
+  const stakedAddresses = [];
+  for (const tokenConfig of networkConfig.tokens) {
+    if (networkName === "bsc_testnet") {
+      const stakedTokenDeploymentName = `StakedToken_${tokenConfig.stakedTokenSymbol}_${hre.network.name}`;
+      const deployedResult = await deploy(stakedTokenDeploymentName, {
+        contract: "StakedToken",
+        from: deployer,
+        log: true,
+        args: [tokenConfig.stakedTokenName, tokenConfig.stakedTokenSymbol, admin],
+      });
+      stakedAddresses.push({
+        address: deployedResult.address,
+        symbol: tokenConfig.stakedTokenSymbol,
+      });
+      console.log(`${stakedTokenDeploymentName} deployed to`, deployedResult.address);
+    }
+  }
+
+  const vaultDeployedResult = await deploy(vaultDeploymentName, {
     contract: "Vault",
     from: deployer,
     args: [
       networkConfig.tokens.map((token) => token.underlying),
-      networkConfig.tokens.map((token) => token.stakedAddress),
+      stakedAddresses.map((item) => item.address),
       networkConfig.tokens.map((token) => token.rewardRate),
       networkConfig.tokens.map((token) => token.minStake),
       networkConfig.tokens.map((token) => token.maxStake),
@@ -53,10 +67,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       distributor,
     ],
   });
-  if (deployedResult.newlyDeployed) {
-    await withdrawVault.setVault(deployedResult.address);
+  if (vaultDeployedResult.newlyDeployed) {
+    await withdrawVault.setVault(vaultDeployedResult.address);
+    console.log(`Vault deployed to ${vaultDeployedResult.address}`);
+    const vault = await ethers.getContract<Vault>(vaultDeploymentName);
+    const tx0 = await vault.unpause();
+    await tx0.wait();
+    const tx1 = await vault.setFlashEnable(false);
+    await tx1.wait();
+    const tx2 = await vault.setCancelEnable(false);
+    await tx2.wait();
+    for (const item of stakedAddresses) {
+      const stakedTokenDeploymentName = `StakedToken_${item.symbol}_${hre.network.name}`;
+      const stakedToken = (await ethers.getContract(stakedTokenDeploymentName)) as StakedToken;
+      const tx = await stakedToken.setMinter(
+        vaultDeployedResult.address,
+        vaultDeployedResult.address,
+      );
+      await tx.wait();
+    }
   }
-  console.log(`Vault deployed to ${deployedResult.address}`);
 };
 
 func.id = "booster_vault";

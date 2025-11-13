@@ -2,7 +2,8 @@ import { getAddress, parseEther, ZeroAddress } from "ethers";
 
 export type BoostTokenConfig = {
   underlying: string;
-  stakedAddress: string;
+  stakedTokenSymbol: string;
+  stakedTokenName: string;
   rewardRate: bigint;
   minStake: bigint;
   maxStake: bigint;
@@ -28,7 +29,8 @@ export const boostConfig: Record<string, BoostMiscConfig> = {
     tokens: [
       {
         underlying: getAddress("0x42e3D7f4cfE3B94BCeF3EBaEa832326AcB40C142"),
-        stakedAddress: getAddress("0x4bf62B89DF3b3D1C3A9352aC1aC86C1428312eE6"),
+        stakedTokenSymbol: "mBnUSDu",
+        stakedTokenName: "mBnUSDu",
         rewardRate: 776n,
         minStake: parseEther("10"),
         maxStake: parseEther(
