@@ -44,8 +44,19 @@ export const boostConfig: Record<string, BoostMiscConfig> = {
     bot: ZeroAddress,
     ceffu: ZeroAddress,
     distributor: ZeroAddress,
-    waitingTime: 3 * 24 * 60 * 60,
-    tokens: [],
+    waitingTime: 7 * 24 * 60 * 60,
+    tokens: [
+      {
+        underlying: getAddress(""),
+        stakedTokenSymbol: "bnUSDu",
+        stakedTokenName: "Binance Booster USDu",
+        rewardRate: 776n,
+        minStake: parseEther("10"),
+        maxStake: parseEther(
+          "115792089237316195423570985008687907853269984665640564039457.584007913129639935",
+        ),
+      },
+    ],
   },
   eth_sepolia: {
     admin: ZeroAddress,
