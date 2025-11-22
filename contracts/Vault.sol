@@ -559,7 +559,7 @@ contract Vault is IVault, Pausable, SingleAdminAccessControl, ReentrancyGuard {
     address from,
     address to,
     uint256 amount
-  ) public nonReentrant returns (bool) {
+  ) public nonReentrant whenNotPaused returns (bool) {
     require(from != to, "from can not be same as the to");
     require(amount > 0, "amount must be greater than 0");
 

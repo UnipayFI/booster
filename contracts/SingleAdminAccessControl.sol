@@ -24,6 +24,7 @@ abstract contract SingleAdminAccessControl is IERC5313, ISingleAdminAccessContro
   /// @param newAdmin address
   function transferAdmin(address newAdmin) external onlyRole(DEFAULT_ADMIN_ROLE) {
     if (newAdmin == msg.sender) revert InvalidAdminChange();
+    if (newAdmin == address(0)) revert InvalidAdminChange();
     _pendingDefaultAdmin = newAdmin;
     emit AdminTransferRequested(_currentDefaultAdmin, newAdmin);
   }
