@@ -47,7 +47,7 @@ export const boostConfig: Record<string, BoostMiscConfig> = {
     waitingTime: 7 * 24 * 60 * 60,
     tokens: [
       {
-        underlying: getAddress(""),
+        underlying: getAddress("0x55d398326f99059fF775485246999027B3197955"),
         stakedTokenSymbol: "bnUSDu",
         stakedTokenName: "Binance Booster USDu",
         rewardRate: 776n,

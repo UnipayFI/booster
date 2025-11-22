@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import {Script} from "forge-std/Script.sol";
-import {Vault} from "../contracts/Vault.sol";
-import {MockToken} from "../contracts/mock/MockToken.sol";
+import { Script } from "forge-std/Script.sol";
+import { Vault } from "../contracts/Vault.sol";
+import { MockToken } from "../contracts/mock/MockToken.sol";
 
 contract VaultStakeScript is Script {
   Vault internal _vault;

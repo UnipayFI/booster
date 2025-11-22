@@ -24,3 +24,5 @@ node_modules
 typechain-types
 .idea
 app/
+test/Fork.t.sol
+test/Hack.t.sol
