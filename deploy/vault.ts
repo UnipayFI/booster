@@ -66,16 +66,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ],
   });
   if (vaultDeployedResult.newlyDeployed) {
-    await withdrawVault.setVault(vaultDeployedResult.address);
     console.log(`Vault deployed to ${vaultDeployedResult.address}`);
-    const vault = await ethers.getContract<Vault>(vaultDeploymentName);
-    const tx0 = await vault.unpause();
-    await tx0.wait();
-    const tx1 = await vault.setFlashEnable(false);
-    await tx1.wait();
-    const tx2 = await vault.setCancelEnable(false);
-    await tx2.wait();
     if (networkName === "bsc_testnet") {
+      if (admin.toLowerCase() === deployer.toLowerCase()) {
+        await withdrawVault.setVault(vaultDeployedResult.address);
+
+        const vault = await ethers.getContract<Vault>(vaultDeploymentName);
+        const tx0 = await vault.unpause();
+        await tx0.wait();
+        const tx1 = await vault.setFlashEnable(false);
+        await tx1.wait();
+        const tx2 = await vault.setCancelEnable(false);
+        await tx2.wait();
+      } else {
+        console.log(
+          "Deployer is not admin, skipping setVault and Vault configuration. Please execute them manually.",
+        );
+      }
       for (const item of stakedAddresses) {
         const stakedTokenDeploymentName = `StakedToken_${item.symbol}_${hre.network.name}`;
         const stakedToken = (await ethers.getContract(stakedTokenDeploymentName)) as StakedToken;
