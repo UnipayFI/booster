@@ -34,20 +34,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   /// 处理 stakedToken
   const stakedAddresses = [];
   for (const tokenConfig of networkConfig.tokens) {
-    if (networkName === "bsc_testnet") {
-      const stakedTokenDeploymentName = `StakedToken_${tokenConfig.stakedTokenSymbol}_${hre.network.name}`;
-      const deployedResult = await deploy(stakedTokenDeploymentName, {
-        contract: "StakedToken",
-        from: deployer,
-        log: true,
-        args: [tokenConfig.stakedTokenName, tokenConfig.stakedTokenSymbol, admin],
-      });
-      stakedAddresses.push({
-        address: deployedResult.address,
-        symbol: tokenConfig.stakedTokenSymbol,
-      });
-      console.log(`${stakedTokenDeploymentName} deployed to`, deployedResult.address);
-    }
+    const stakedTokenDeploymentName = `StakedToken_${tokenConfig.stakedTokenSymbol}_${hre.network.name}`;
+    const deployedResult = await deploy(stakedTokenDeploymentName, {
+      contract: "StakedToken",
+      from: deployer,
+      log: true,
+      args: [tokenConfig.stakedTokenName, tokenConfig.stakedTokenSymbol, admin],
+    });
+    stakedAddresses.push({
+      address: deployedResult.address,
+      symbol: tokenConfig.stakedTokenSymbol,
+    });
+    console.log(`${stakedTokenDeploymentName} deployed to`, deployedResult.address);
   }
 
   const vaultDeployedResult = await deploy(vaultDeploymentName, {
@@ -77,14 +75,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await tx1.wait();
     const tx2 = await vault.setCancelEnable(false);
     await tx2.wait();
-    for (const item of stakedAddresses) {
-      const stakedTokenDeploymentName = `StakedToken_${item.symbol}_${hre.network.name}`;
-      const stakedToken = (await ethers.getContract(stakedTokenDeploymentName)) as StakedToken;
-      const tx = await stakedToken.setMinter(
-        vaultDeployedResult.address,
-        vaultDeployedResult.address,
-      );
-      await tx.wait();
+    if (networkName === "bsc_testnet") {
+      for (const item of stakedAddresses) {
+        const stakedTokenDeploymentName = `StakedToken_${item.symbol}_${hre.network.name}`;
+        const stakedToken = (await ethers.getContract(stakedTokenDeploymentName)) as StakedToken;
+        const tx = await stakedToken.setMinter(
+          vaultDeployedResult.address,
+          vaultDeployedResult.address,
+        );
+        await tx.wait();
+      }
     }
   }
 };

@@ -40,10 +40,10 @@ export const boostConfig: Record<string, BoostMiscConfig> = {
     ],
   },
   bsc_mainnet: {
-    admin: ZeroAddress,
-    bot: ZeroAddress,
-    ceffu: ZeroAddress,
-    distributor: ZeroAddress,
+    admin: getAddress("0x25f9f26F954ED5F8907dF2a5f69776aD8564792C"),
+    bot: getAddress("0x29980fd30951B7f8B767555FE0b21cf98C814336"),
+    ceffu: getAddress("0xc3e666a71b38b258e6517d5d6eafaa30e46eb5ec"),
+    distributor: getAddress("0x29980fd30951B7f8B767555FE0b21cf98C814336"),
     waitingTime: 7 * 24 * 60 * 60,
     tokens: [
       {
