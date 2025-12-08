@@ -14,6 +14,67 @@
 | sUSDu | [0xfaf2A0372742A305817f5a634cA8E1C75a3Cf3E1](https://testnet.bscscan.com/address/0xfaf2A0372742A305817f5a634cA8E1C75a3Cf3E1) | sUSDu Token |
 | mUSDT | [0x42e3D7f4cfE3B94BCeF3EBaEa832326AcB40C142](https://testnet.bscscan.com/address/0x42e3D7f4cfE3B94BCeF3EBaEa832326AcB40C142) | mUSDT Token |
 
+## BSC_MAINNET
+
+### BSC Mainnet 地址（ChainId 56）
+
+| 合约 | 地址 | 说明 |
+|------|------|------|
+| BoosterVault | [0x57f0FE70A631614eB86Fce1212C6e3C17d81b63A](https://bscscan.com/address/0x57f0FE70A631614eB86Fce1212C6e3C17d81b63A) | 主仓库合约，处理质押/赎回逻辑 |
+| BoosterWithdrawVault | [0x1946bC20466813ae2153c6E073DB677a529c4401](https://bscscan.com/address/0x1946bC20466813ae2153c6E073DB677a529c4401) | 提现缓冲仓，负责实际打款 |
+| StakedToken_bnUSDu | [0x3c4b067622bF104FEc23463B0A4Cb912161D9319](https://bscscan.com/address/0x3c4b067622bF104FEc23463B0A4Cb912161D9319) | 主网 staked 资产代币 |
+
+### Events（按合约分类）
+
+#### BoosterVault
+
+| 事件名 | 参数 |
+|------|------|
+| AddSupportedToken | address _token, uint256 _minAmount, uint256 _maxAmount |
+| AdminTransferRequested | address oldAdmin, address newAdmin |
+| AdminTransferred | address oldAdmin, address newAdmin |
+| CancelClaim | address user, address _token, uint256 _amount, uint256 _id |
+| CancelStatusChanged | bool oldStatus, bool newStatus |
+| CeffuReceive | address _token, address _ceffu, uint256 _amount |
+| ClaimAssets | address _user, address _token, uint256 _amount, uint256 _id |
+| EmergencyWithdrawal | address _token, address _receiver |
+| FlashStatusChanged | bool oldStatus, bool newStatus |
+| FlashWithdraw | address _user, address _token, uint256 _amount, uint256 _fee |
+| Paused | address account |
+| RequestClaim | address _user, address _token, uint256 _amount, uint256 _id, bool _isSusduTokenWithdraw |
+| RoleAdminChanged | bytes32 role, bytes32 previousAdminRole, bytes32 newAdminRole |
+| RoleGranted | bytes32 role, address account, address sender |
+| RoleRevoked | bytes32 role, address account, address sender |
+| Stake | address _user, address _token, uint256 _amount |
+| StakedDistributed | address token, address recipient, uint256 amount, bool historicalRewardsEnabled |
+| StakedTokenRegistered | address stakedToken, address underlyingToken |
+| Unpaused | address account |
+| UpdateCeffu | address _oldCeffu, address _newCeffu |
+| UpdatePenaltyRate | uint256 oldRate, uint256 newRate |
+| UpdateRewardRate | address _token, uint256 _oldRewardRate, uint256 _newRewardRate |
+| UpdateStakeLimit | address _token, uint256 _oldMinAmount, uint256 _oldMaxAmount, uint256 _newMinAmount, uint256 _newMaxAmount |
+| UpdateWaitingTime | uint256 _oldWaitingTime, uint256 _newWaitingTIme |
+
+#### BoosterWithdrawVault
+
+| 事件名 | 参数 |
+|------|------|
+| AdminTransferRequested | address oldAdmin, address newAdmin |
+| AdminTransferred | address oldAdmin, address newAdmin |
+| CeffuReceive | address token, address to, uint256 amount |
+| Paused | address account |
+| RoleAdminChanged | bytes32 role, bytes32 previousAdminRole, bytes32 newAdminRole |
+| RoleGranted | bytes32 role, address account, address sender |
+| RoleRevoked | bytes32 role, address account, address sender |
+| Unpaused | address account |
+
+#### StakedToken_bnUSDu
+
+| 事件名 | 参数 |
+|------|------|
+| Approval | address owner, address spender, uint256 value |
+| Transfer | address from, address to, uint256 value |
+
 ### Vault 接口速查表
 
 | 分类 | 函数 | 签名 | 参数说明 | 备注 |
@@ -107,3 +168,18 @@ export async function loadClaimData(user: string, token: string) {
   };
 }
 ```
+### Flash Withdraw & Instant Withdraw
+
+- Diffs
+  - `Vault` 的 `flashWithdrawWithPenalty` 为即时赎回，会按当前罚金比例扣减，不进入等待队列。
+  - 罚金比例由管理员通过 `setPenaltyRate` 配置，更新会触发 `UpdatePenaltyRate` 事件；是否开放闪提由开关控制，变更会触发 `FlashStatusChanged`。
+  - `WithdrawVault` 不参与罚金计算，仅负责资金的实际转账（如 `transfer`、`emergencyWithdraw`、`transferToCeffu`）；罚金逻辑与赎回金额计算在 `Vault` 内完成。
+  - 闪提会触发 `FlashWithdraw` 事件，并直接写入历史记录（`getClaimHistory` 可见，`requestTime == claimTime`，不会出现在 `getClaimQueueIDs`）。
+
+- Steps
+  - 确认开关：监听 `FlashStatusChanged` 事件或按管理逻辑判断是否允许闪提。
+  - 发起调用：`flashWithdrawWithPenalty(address _token, uint256 _amount)` 在 `BoosterVault` 上执行。
+  - 结果查询：
+    - 事件：`FlashWithdraw(_user, _token, _amount, _fee)` 可用于前端提示与审计。
+    - 历史：通过 `getClaimHistory(user, token, index)` 查看该条记录（`isFlashWithdraw = true`）。
+  - 资金划转：由 `WithdrawVault` 完成实际打款；如需向 Ceffu 划转由 `transferToCeffu` 处理。
