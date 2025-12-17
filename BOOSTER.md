@@ -80,10 +80,10 @@
 | 分类 | 函数 | 签名 | 参数说明 | 备注 |
 |------|------|------|----------|------|
 | 质押 / 赎回 | `stake_66380860` | `stake_66380860(address _token, uint256 _stakedAmount)` | `_token` 底层资产地址；`_stakedAmount` 质押数量 | 质押底层资产并领取 staked token |
-|  | `requestClaim_8135334` | `requestClaim_8135334(address _token, uint256 _amount, bool _isSusduTokenWithdraw) returns (uint256 queueId)` | `_amount` 赎回额（`type(uint256).max` 表示全部），`_isSusduTokenWithdraw` 指定是否走 susdu 通道 | 发起赎回请求，先扣奖励再扣本金；返回队列 ID |
+|  | `requestClaim_8135334` | `requestClaim_8135334(address _token, uint256 _amount, bool _isSusduTokenWithdraw) returns (uint256 queueId)` | `_amount` 赎回的底层资产金额（USDT），而非 share 数量（`type(uint256).max` 表示全部），`_isSusduTokenWithdraw` 指定是否走 susdu 通道 | 发起赎回请求，先扣奖励再扣本金；返回队列 ID |
 |  | `cancelClaim` | `cancelClaim(uint256 _queueId, address _token)` | `_queueId` 队列 ID，`_token` 底层资产地址 | 等待期间撤销赎回，需开启取消开关 |
 |  | `claim_41202704` | `claim_41202704(uint256 _queueId, address _token)` | `_queueId` 队列 ID | 等待结束后领取本金和奖励 |
-|  | `flashWithdrawWithPenalty` | `flashWithdrawWithPenalty(address _token, uint256 _amount)` | `_amount` 赎回金额 | 立即提款，按罚金比例扣减 |
+|  | `flashWithdrawWithPenalty` | `flashWithdrawWithPenalty(address _token, uint256 _amount)` | `_amount` 赎回的底层资产金额（USDT） | 立即提款，按罚金比例扣减 |
 | 查询余额 | `getClaimableAssets` | `getClaimableAssets(address user, address token) → uint256` | `user` 用户地址，`token` 底层资产 | 当前可赎回总额（本金 + 奖励） |
 |  | `getClaimableRewards` | `getClaimableRewards(address user, address token) → uint256` | 同上 | 当前未领取奖励 |
 |  | `getTotalRewards` | `getTotalRewards(address user, address token) → uint256` | 同上 | 历史已领 + 当前奖励 |
