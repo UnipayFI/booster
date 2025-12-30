@@ -13,7 +13,7 @@ import { MockToken } from "../contracts/mock/MockToken.sol";
 contract VaultBoosterRewardRateTest is Test {
   uint256 private constant _BASE = 10_000;
   uint256 private constant _ONE_YEAR = 31557600;
-  
+
   Vault internal _vault;
   StakedToken internal _stakedToken;
   WithdrawVault internal _withdrawVault;
@@ -23,17 +23,17 @@ contract VaultBoosterRewardRateTest is Test {
   address internal _bot;
   address internal _ceffu;
   address internal _distributor;
-  
+
   address internal _userA;
   address internal _userB;
   address internal _userC;
   address internal _userD;
 
   uint256 internal _waitingTime = 3 days;
-  
+
   // Scenario Rates
   uint256 internal _rateW1 = 776; // 7.76%
-  uint256 internal _rateW2 = 0;   // 0%
+  uint256 internal _rateW2 = 0; // 0%
   uint256 internal _rateW3 = 500; // 5.00%
 
   function setUp() public {
@@ -41,7 +41,7 @@ contract VaultBoosterRewardRateTest is Test {
     _bot = makeAddr("bot");
     _ceffu = makeAddr("ceffu");
     _distributor = makeAddr("distributor");
-    
+
     _userA = makeAddr("userA");
     _userB = makeAddr("userB");
     _userC = makeAddr("userC");
@@ -121,7 +121,7 @@ contract VaultBoosterRewardRateTest is Test {
     // User C and D Stake
     // ==========================================
     vm.warp(604801);
-    
+
     _vault.setRewardRate(address(_underlying), _rateW2);
 
     vm.startPrank(_userC);
@@ -140,7 +140,7 @@ contract VaultBoosterRewardRateTest is Test {
     // User B and C Unstake
     // ==========================================
     vm.warp(604801 + oneWeek);
-    
+
     _vault.setRewardRate(address(_underlying), _rateW3);
 
     // User B Unstakes (Staked for W1 + W2)
@@ -175,10 +175,10 @@ contract VaultBoosterRewardRateTest is Test {
     vm.warp(604801 + oneWeek * 2);
 
     (uint256 currentRate, ) = _vault.getCurrentRewardRate(address(_underlying));
-    
+
     uint256 stakedA = _vault.getStakedAmount(_userA, address(_underlying));
     uint256 claimableA_Pre = _vault.getClaimableRewards(_userA, address(_underlying));
-    
+
     // User A Unstakes (Staked for W1 + W2 + W3)
     // Expected: W1(7.76%) + W2(0%) + W3(5.00%)
     vm.startPrank(_userA);
@@ -190,7 +190,7 @@ contract VaultBoosterRewardRateTest is Test {
     vm.startPrank(_userD);
     uint256 queueIdD = _vault.requestClaim_8135334(address(_underlying), type(uint256).max, false);
     vm.stopPrank();
-    
+
     // Verify Rewards
     // User A: W1(7.76%) + W2(0%) + W3(5.00%)
     // W1: 100 * 0.0776 * 7/365.25 = 0.14872 ether

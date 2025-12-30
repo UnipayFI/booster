@@ -20,12 +20,7 @@ contract UnitasProxy is SingleAdminAccessControl, ReentrancyGuard {
   IERC4626Minimal public immutable staked;
   address public immutable usdu;
 
-  constructor(
-    IUnitasMintingV2 _minting,
-    IERC4626Minimal _staked,
-    address _usdu,
-    address admin
-  ) {
+  constructor(IUnitasMintingV2 _minting, IERC4626Minimal _staked, address _usdu, address admin) {
     if (address(_minting) == address(0) || address(_staked) == address(0) || address(_usdu) == address(0)) {
       revert InvalidZeroAddress();
     }
@@ -63,4 +58,3 @@ contract UnitasProxy is SingleAdminAccessControl, ReentrancyGuard {
     shares = staked.deposit(amount, stakeReceiver);
   }
 }
-
