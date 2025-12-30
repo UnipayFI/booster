@@ -174,10 +174,10 @@ contract VaultBoosterRewardRateTest is Test {
     // ==========================================
     vm.warp(604801 + oneWeek * 2);
 
-    (uint256 currentRate, ) = _vault.getCurrentRewardRate(address(_underlying));
+    // (uint256 currentRate, ) = _vault.getCurrentRewardRate(address(_underlying));
 
-    uint256 stakedA = _vault.getStakedAmount(_userA, address(_underlying));
-    uint256 claimableA_Pre = _vault.getClaimableRewards(_userA, address(_underlying));
+    // uint256 stakedA = _vault.getStakedAmount(_userA, address(_underlying));
+    // uint256 claimableA_Pre = _vault.getClaimableRewards(_userA, address(_underlying));
 
     // User A Unstakes (Staked for W1 + W2 + W3)
     // Expected: W1(7.76%) + W2(0%) + W3(5.00%)
