@@ -27,7 +27,7 @@ via_ir = true
 [fmt]
 tab_width = 2
 
-[lint]
+[profile.lint]
 exclude_lints = [
     "unsafe-typecast",
     "unused-import",

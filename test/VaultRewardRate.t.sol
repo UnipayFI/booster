@@ -4,10 +4,10 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 
-import { Vault } from "../contracts/Vault.sol";
-import { StakedToken } from "../contracts/StakedToken.sol";
-import { WithdrawVault } from "../contracts/WithdrawVault.sol";
-import { ClaimItem } from "../contracts/IVault.sol";
+import { Vault } from "../contracts/vault/Vault.sol";
+import { StakedToken } from "../contracts/vault/StakedToken.sol";
+import { WithdrawVault } from "../contracts/vault/WithdrawVault.sol";
+import { ClaimItem } from "../contracts/interfaces/IVault.sol";
 import { MockToken } from "../contracts/mock/MockToken.sol";
 
 contract VaultBoosterRewardRateTest is Test {

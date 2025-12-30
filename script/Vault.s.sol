@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { Script } from "forge-std/Script.sol";
-import { Vault } from "../contracts/Vault.sol";
+import { Vault } from "../contracts/vault/Vault.sol";
 import { MockToken } from "../contracts/mock/MockToken.sol";
 
 contract VaultStakeScript is Script {

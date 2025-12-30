@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "forge-std/Script.sol";
-import "../contracts/Vault.sol";
-import "../contracts/WithdrawVault.sol";
-import "../contracts/StakedToken.sol";
+import "../contracts/vault/Vault.sol";
+import "../contracts/vault/WithdrawVault.sol";
+import "../contracts/vault/StakedToken.sol";
 
 struct DeployParams {
   address admin;

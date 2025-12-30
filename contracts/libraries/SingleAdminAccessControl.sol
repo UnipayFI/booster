@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/interfaces/IERC5313.sol";
-import "./ISingleAdminAccessControl.sol";
+import "../interfaces/ISingleAdminAccessControl.sol";
 
 /**
  * @title SingleAdminAccessControl
