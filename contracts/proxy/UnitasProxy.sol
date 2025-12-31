@@ -6,17 +6,14 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 import "../libraries/SingleAdminAccessControl.sol";
 import "../interfaces/IUnitasMintingV2.sol";
+import "../interfaces/IUnitasProxy.sol";
 import "../interfaces/IERC4626Minimal.sol";
 
-contract UnitasProxy is IERC1271, SingleAdminAccessControl, ReentrancyGuard {
+contract UnitasProxy is IUnitasProxy, IERC1271, SingleAdminAccessControl, ReentrancyGuard {
   using SafeERC20 for IERC20;
-
-  error InvalidZeroAddress();
-  error InvalidBenefactor();
-  error InvalidBeneficiary();
-  error InvalidSignatureType();
 
   bytes32 public constant MINT_CALLER_ROLE = keccak256("MINT_CALLER_ROLE");
   bytes32 public constant SIGNER_ROLE = keccak256("SIGNER_ROLE");
@@ -24,23 +21,29 @@ contract UnitasProxy is IERC1271, SingleAdminAccessControl, ReentrancyGuard {
   bytes4 private constant EIP1271_MAGICVALUE = bytes4(keccak256("isValidSignature(bytes32,bytes)"));
   bytes4 private constant EIP1271_INVALID_SIGNATURE = 0xffffffff;
 
+  address public immutable usdu;
   IUnitasMintingV2 public immutable minting;
   IERC4626Minimal public immutable staked;
-  address public immutable usdu;
 
-  constructor(IUnitasMintingV2 _minting, IERC4626Minimal _staked, address _usdu, address admin) {
-    if (address(_minting) == address(0) || address(_staked) == address(0) || address(_usdu) == address(0)) {
+  constructor(address adminAddress, address usduAddress, address mintingAddress, address stakedAddress) {
+    if (
+      address(mintingAddress) == address(0) ||
+      address(stakedAddress) == address(0) ||
+      address(usduAddress) == address(0)
+    ) {
       revert InvalidZeroAddress();
     }
-    if (admin == address(0)) {
+    if (adminAddress == address(0)) {
       revert InvalidZeroAddress();
     }
 
-    minting = _minting;
-    staked = _staked;
-    usdu = _usdu;
+    minting = IUnitasMintingV2(mintingAddress);
+    staked = IERC4626Minimal(stakedAddress);
+    usdu = usduAddress;
 
-    _grantRole(DEFAULT_ADMIN_ROLE, admin);
+    // Add AdminChanged event emission when admin role is granted
+    emit AdminChanged(address(0), adminAddress);
+    _grantRole(DEFAULT_ADMIN_ROLE, adminAddress);
   }
 
   function isValidSignature(bytes32 hash, bytes memory signature) external view override returns (bytes4) {
@@ -51,29 +54,36 @@ contract UnitasProxy is IERC1271, SingleAdminAccessControl, ReentrancyGuard {
     return EIP1271_INVALID_SIGNATURE;
   }
 
-  function approveCollateral(address collateralAsset, uint256 allowance) external onlyRole(DEFAULT_ADMIN_ROLE) {
+  function approveCollateral(
+    address collateralAsset,
+    uint256 allowance
+  ) external override onlyRole(DEFAULT_ADMIN_ROLE) {
     if (collateralAsset == address(0)) {
       revert InvalidZeroAddress();
     }
 
     IERC20(collateralAsset).approve(address(minting), 0);
     IERC20(collateralAsset).approve(address(minting), allowance);
+
+    emit CollateralApproved(collateralAsset, allowance);
   }
 
-  function rescueERC20(address token, address to, uint256 amount) external onlyRole(DEFAULT_ADMIN_ROLE) {
+  function rescueERC20(address token, address to, uint256 amount) external override onlyRole(DEFAULT_ADMIN_ROLE) {
     if (token == address(0) || to == address(0)) {
       revert InvalidZeroAddress();
     }
     IERC20(token).safeTransfer(to, amount);
+
+    emit ERC20Rescued(token, to, amount);
   }
 
   function mintAndStake(
+    address receiver,
     IUnitasMintingV2.Order calldata order,
     IUnitasMintingV2.Route calldata route,
-    IUnitasMintingV2.Signature calldata signature,
-    address stakeReceiver
-  ) external nonReentrant onlyRole(MINT_CALLER_ROLE) returns (uint256 shares) {
-    if (stakeReceiver == address(0)) {
+    IUnitasMintingV2.Signature calldata signature
+  ) external override nonReentrant onlyRole(MINT_CALLER_ROLE) returns (uint256 shares) {
+    if (receiver == address(0)) {
       revert InvalidZeroAddress();
     }
     if (signature.signature_type != IUnitasMintingV2.SignatureType.EIP1271) {
@@ -93,6 +103,8 @@ contract UnitasProxy is IERC1271, SingleAdminAccessControl, ReentrancyGuard {
     IERC20(usdu).approve(address(staked), 0);
     IERC20(usdu).approve(address(staked), amount);
 
-    shares = staked.deposit(amount, stakeReceiver);
+    shares = staked.deposit(amount, receiver);
+
+    emit MintAndStake(receiver, order, route, signature);
   }
 }
