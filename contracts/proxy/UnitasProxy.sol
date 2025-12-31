@@ -78,12 +78,12 @@ contract UnitasProxy is IUnitasProxy, IERC1271, SingleAdminAccessControl, Reentr
   }
 
   function mintAndStake(
-    address receiver,
+    address beneficiary,
     IUnitasMintingV2.Order calldata order,
     IUnitasMintingV2.Route calldata route,
     IUnitasMintingV2.Signature calldata signature
   ) external override nonReentrant onlyRole(MINT_CALLER_ROLE) returns (uint256 shares) {
-    if (receiver == address(0)) {
+    if (beneficiary == address(0)) {
       revert InvalidZeroAddress();
     }
     if (signature.signature_type != IUnitasMintingV2.SignatureType.EIP1271) {
@@ -103,8 +103,8 @@ contract UnitasProxy is IUnitasProxy, IERC1271, SingleAdminAccessControl, Reentr
     IERC20(usdu).approve(address(staked), 0);
     IERC20(usdu).approve(address(staked), amount);
 
-    shares = staked.deposit(amount, receiver);
+    shares = staked.deposit(amount, beneficiary);
 
-    emit MintAndStake(receiver, order, route, signature);
+    emit MintAndStake(beneficiary, order, route, signature);
   }
 }
