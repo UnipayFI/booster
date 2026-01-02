@@ -206,6 +206,11 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "benefactor",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "beneficiary",
         "type": "address"
       },

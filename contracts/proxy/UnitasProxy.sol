@@ -6,17 +6,25 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 import "../libraries/SingleAdminAccessControl.sol";
 import "../interfaces/IUnitasMintingV2.sol";
 import "../interfaces/IUnitasProxy.sol";
 import "../interfaces/IERC4626Minimal.sol";
 
-contract UnitasProxy is IUnitasProxy, IERC1271, SingleAdminAccessControl, ReentrancyGuard {
+contract UnitasProxy is
+  IUnitasProxy,
+  IERC1271,
+  SingleAdminAccessControl,
+  ReentrancyGuard,
+  Pausable
+{
   using SafeERC20 for IERC20;
 
   bytes32 public constant MINT_CALLER_ROLE = keccak256("MINT_CALLER_ROLE");
   bytes32 public constant SIGNER_ROLE = keccak256("SIGNER_ROLE");
+  bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
   bytes4 private constant EIP1271_MAGICVALUE = bytes4(keccak256("isValidSignature(bytes32,bytes)"));
   bytes4 private constant EIP1271_INVALID_SIGNATURE = 0xffffffff;
@@ -46,7 +54,18 @@ contract UnitasProxy is IUnitasProxy, IERC1271, SingleAdminAccessControl, Reentr
     _grantRole(DEFAULT_ADMIN_ROLE, adminAddress);
   }
 
+  function pause() external onlyRole(PAUSER_ROLE) {
+    _pause();
+  }
+
+  function unpause() external onlyRole(PAUSER_ROLE) {
+    _unpause();
+  }
+
   function isValidSignature(bytes32 hash, bytes memory signature) external view override returns (bytes4) {
+    if (paused()) {
+      return EIP1271_INVALID_SIGNATURE;
+    }
     (address signer, ECDSA.RecoverError err, ) = ECDSA.tryRecover(hash, signature);
     if (err == ECDSA.RecoverError.NoError && hasRole(SIGNER_ROLE, signer)) {
       return EIP1271_MAGICVALUE;
@@ -78,11 +97,12 @@ contract UnitasProxy is IUnitasProxy, IERC1271, SingleAdminAccessControl, Reentr
   }
 
   function mintAndStake(
+    address benefactor,
     address beneficiary,
     IUnitasMintingV2.Order calldata order,
     IUnitasMintingV2.Route calldata route,
     IUnitasMintingV2.Signature calldata signature
-  ) external override nonReentrant onlyRole(MINT_CALLER_ROLE) returns (uint256 shares) {
+  ) external override nonReentrant whenNotPaused onlyRole(MINT_CALLER_ROLE) returns (uint256 shares) {
     if (beneficiary == address(0)) {
       revert InvalidZeroAddress();
     }
@@ -95,6 +115,10 @@ contract UnitasProxy is IUnitasProxy, IERC1271, SingleAdminAccessControl, Reentr
     if (order.beneficiary != address(this)) {
       revert InvalidBeneficiary();
     }
+
+    // Transfer collateral asset from benefactor to this contract
+    // Make sure benefactor approve to proxy contract
+    IERC20(order.collateral_asset).safeTransferFrom(benefactor, address(this), order.collateral_amount);
 
     uint256 amount = uint256(order.usdu_amount);
 
