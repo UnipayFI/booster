@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 /// @title ERC4626 interface
 /// See: https://eips.ethereum.org/EIPS/eip-4626
 interface IERC4626Minimal {
+  function totalSupply() external view returns (uint256);
+
   function totalAssets() external view returns (uint256 totalManagedAssets);
 
   function convertToShares(uint256 assets) external view returns (uint256 shares);
