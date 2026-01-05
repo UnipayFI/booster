@@ -8,6 +8,11 @@
       },
       {
         "internalType": "address",
+        "name": "multiSigWalletAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
         "name": "usduAddress",
         "type": "address"
       },
@@ -73,12 +78,32 @@
   },
   {
     "inputs": [],
+    "name": "InvalidPenaltyRate",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidSignatureType",
     "type": "error"
   },
   {
     "inputs": [],
+    "name": "InvalidStakedState",
+    "type": "error"
+  },
+  {
+    "inputs": [],
     "name": "InvalidZeroAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidZeroAmount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoStakedSupply",
     "type": "error"
   },
   {
@@ -209,6 +234,37 @@
       {
         "indexed": true,
         "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "susduAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "usduAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "penaltyUsduAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "FlashWithdraw",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
         "name": "benefactor",
         "type": "address"
       },
@@ -315,6 +371,25 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "address",
+        "name": "oldMultiSigWallet",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newMultiSigWallet",
+        "type": "address"
+      }
+    ],
+    "name": "MultiSigWalletUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": false,
         "internalType": "address",
         "name": "account",
@@ -322,6 +397,25 @@
       }
     ],
     "name": "Paused",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "oldRate",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newRate",
+        "type": "uint256"
+      }
+    ],
+    "name": "PenaltyRateSet",
     "type": "event"
   },
   {
@@ -577,6 +671,19 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "rate",
+        "type": "uint256"
+      }
+    ],
+    "name": "adjustPenaltyRate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "address",
         "name": "collateralAsset",
         "type": "address"
@@ -588,6 +695,19 @@
       }
     ],
     "name": "approveCollateral",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "susduAmount",
+        "type": "uint256"
+      }
+    ],
+    "name": "flashWithdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -793,6 +913,19 @@
     "outputs": [
       {
         "internalType": "contract IUnitasMintingV2",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "multiSigWallet",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -1033,6 +1166,19 @@
   {
     "inputs": [],
     "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newMultiSigWallet",
+        "type": "address"
+      }
+    ],
+    "name": "updateMultiSigWallet",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
